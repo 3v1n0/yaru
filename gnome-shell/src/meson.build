@@ -11,8 +11,7 @@ variants = [
   'dark',
 ]
 
-DEFAULT_VARIANT = get_option('gnome-shell-default-variant')
-DEFAULT_GDM_VARIANT = get_option('gdm-default-variant')
+DEFAULT_VARIANT = 'light'
 INCLUDE_HIGH_CONTRAST_VARIANTS = false
 
 foreach accent: enabled_accent_colors
@@ -20,14 +19,6 @@ foreach accent: enabled_accent_colors
     variants += [ accent, accent + '-dark']
   endif
 endforeach
-
-if not variants.contains(DEFAULT_VARIANT)
-  error('Invalid gnome-shell default variant selected')
-endif
-
-if not variants.contains(DEFAULT_GDM_VARIANT)
-  error('Invalid default gdm variant selected')
-endif
 
 theme_css = []
 theme_sources = files(
@@ -244,7 +235,7 @@ if gnomeshell_use_gresource
   foreach gfile: theme_gresource_files
     filepath = '@0@'.format(gfile)
     alias = filepath[0] == '/' ? '@0@'.format(gfile).split('/')[-1] : filepath
-    if alias == 'gnome-shell@0@.css'.format(DEFAULT_GDM_VARIANT != '' ? '-' + DEFAULT_GDM_VARIANT : '')
+    if alias == 'gnome-shell.css'
       # Use Yaru files for ubuntu's special gdm
       theme_gresource_files_xml += '<file alias="gdm.css">@0@</file>'.format(gfile)
     endif
