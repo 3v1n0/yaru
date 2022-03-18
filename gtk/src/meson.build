@@ -89,6 +89,21 @@ foreach flavour: flavours
         gtk_scss_path = base_path / variant_file + '.scss'
       endif
 
+      # Look for scss files in the variant dir first, otherwise fallback to
+      # base, default or upstream paths, so using reversed order
+      scss_paths = []
+      gtk_scss_dependencies = []
+      foreach src: sources_priority
+        scss_paths += ['-I', meson.current_source_dir() / src ]
+
+        scss_deps = run_command(
+          'find', src, '-name', '_*.scss'
+          ).stdout().strip().split('\n')
+        if scss_deps.length() > 0 and scss_deps[0] != ''
+          gtk_scss_dependencies += scss_deps
+        endif
+      endforeach
+
       if is_accent
           accent = base_theme_name
           accent_configuration = {
@@ -120,8 +135,9 @@ foreach flavour: flavours
               input: gtk_yaru_colors_defs_scss,
               output: '@BASENAME@.css'.format(variant),
               command: [
-                sassc, '-a', '@INPUT@', '@OUTPUT@',
-                '-I', css_sources_path / 'gnome-shell-sass',
+                sassc, '-a',
+                scss_paths,
+                '@INPUT@', '@OUTPUT@',
               ],
               depends: source_deps,
               depend_files: [
@@ -131,21 +147,6 @@ foreach flavour: flavours
             )
           }
       endif
-
-      # Look for scss files in the variant dir first, otherwise fallback to
-      # base, default or upstream paths, so using reversed order
-      scss_paths = []
-      gtk_scss_dependencies = []
-      foreach src: sources_priority
-        scss_paths += ['-I', meson.current_source_dir() / src ]
-
-        scss_deps = run_command(
-          'find', src, '-name', '_*.scss'
-          ).stdout().strip().split('\n')
-        if scss_deps.length() > 0 and scss_deps[0] != ''
-          gtk_scss_dependencies += scss_deps
-        endif
-      endforeach
 
       generated_css += custom_target(target_name,
         input: gtk_scss_path,
