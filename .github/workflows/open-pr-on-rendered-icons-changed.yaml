@@ -20,10 +20,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
+      - name: Setup common variables
+        id: env
+        run: |
+          echo "::set-output name=push-branch::rendered-icons"
+          echo "::set-output name=reference-branch::rendered-icons-ref"
+
       - name: Check Source changes
         uses: dorny/paths-filter@v2
         id: check-changed
         with:
+          ref: ${{ steps.env.outputs.reference-branch }}
           filters: |
             default:
               - icons/src/fullcolor/default/**
@@ -91,4 +98,10 @@ jobs:
           title: Auto rendered icons updates
           labels: automated pr, new upstream
           body: "[New rendered icons / symlinks changes](https://github.com/ubuntu/yaru/actions?query=workflow%3A%22Update+PR+when+icons+needs+to+be+re-rendered%22) by GitHub Action"
-          branch: rendered-icons
+          branch: ${{ steps.env.outputs.push-branch }}
+
+      - name: Push changes to reference branch
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.env.outputs.reference-branch }}
