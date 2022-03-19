@@ -17,18 +17,6 @@ jobs:
       - name: Checkout Yaru code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt install software-properties-common
-          sudo add-apt-repository ppa:inkscape.dev/stable
-          sudo apt update
-          sudo apt install sassc python3-pip xvfb inkscape optipng scour
-          sudo pip3 install meson ninja
-
-      - name: Configure project
-        run: |
-          meson _build -Dmate=true
-
       - name: Check Source changes
         uses: dorny/paths-filter@v2
         id: check-changed
@@ -43,6 +31,39 @@ jobs:
               - icons/src/fullcolor/accented/**
             symlinks:
               - icons/src/symlinks
+
+      - name: Check changes results
+        id: check-changed-results
+        run: |
+          any_changed=false
+          if [ "${{ steps.check-changed.outputs.default }}" == "true" ]; then
+            any_changed=true;
+          fi
+          if [ "${{ steps.check-changed.outputs.mate }}" == "true" ]; then
+            any_changed=true;
+          fi
+          if [ "${{ steps.check-changed.outputs.accented }}" == "true" ]; then
+            any_changed=true;
+          fi
+          if [ "${{ steps.check-changed.outputs.symlinks }}" == "true" ]; then
+            any_changed=true;
+          fi
+          echo "changes:  ${{ steps.check-changed.outputs.changes }}"
+          echo "::set-output name=any-changed::${changed}"
+
+      - name: Install dependencies
+        if: ${{ steps.check-changed.outputs.changes != '[]' }}
+        run: |
+          sudo apt install software-properties-common
+          sudo add-apt-repository ppa:inkscape.dev/stable
+          sudo apt update
+          sudo apt install sassc python3-pip xvfb inkscape optipng scour
+          sudo pip3 install meson ninja
+
+      - name: Configure project
+        if: ${{ steps.check-changed.outputs.changes != '[]' }}
+        run: |
+          meson _build -Dmate=true
 
       - name: Render default icons and generate symlinks
         if: steps.check-changed.outputs.default == 'true'
