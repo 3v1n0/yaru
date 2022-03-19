@@ -49,46 +49,46 @@ jobs:
             symlinks:
               - icons/src/symlinks
 
-      - name: Render default icons and generate symlinks
-        if: steps.check-changed.outputs.default == 'true'
-        run: |
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-default
+      # - name: Render default icons and generate symlinks
+      #   if: steps.check-changed.outputs.default == 'true'
+      #   run: |
+      #     xvfb-run -a -- ninja -C _build -v render+symlink-icons-default
 
-      - name: Render mate icons and generate symlinks
-        if: steps.check-changed.outputs.mate == 'true'
-        run: |
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-mate
+      # - name: Render mate icons and generate symlinks
+      #   if: steps.check-changed.outputs.mate == 'true'
+      #   run: |
+      #     xvfb-run -a -- ninja -C _build -v render+symlink-icons-mate
 
-      - name: Render accented icons and generate symlinks
-        if: steps.check-changed.outputs.accented == 'true'
-        run: |
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-accented
+      # - name: Render accented icons and generate symlinks
+      #   if: steps.check-changed.outputs.accented == 'true'
+      #   run: |
+      #     xvfb-run -a -- ninja -C _build -v render+symlink-icons-accented
 
-      - name: Symlink all icons
-        if: steps.check-changed.outputs.symlinks == 'true'
-        run: |
-          xvfb-run -a -- ninja -C _build -v symlink-icons
+      # - name: Symlink all icons
+      #   if: steps.check-changed.outputs.symlinks == 'true'
+      #   run: |
+      #     xvfb-run -a -- ninja -C _build -v symlink-icons
 
-      - name: Check Rendering changes
-        id: check-rendering
-        run: |
-          if git diff --exit-code $GITHUB_BASE_REF; then
-            changed=false
-          else
-            changed=true
-          fi
-          echo "::set-output name=changed::${changed}"
+      # - name: Check Rendering changes
+      #   id: check-rendering
+      #   run: |
+      #     if git diff --exit-code $GITHUB_BASE_REF; then
+      #       changed=false
+      #     else
+      #       changed=true
+      #     fi
+      #     echo "::set-output name=changed::${changed}"
 
-      - name: Create or update Pull Request
-        if: steps.check-rendering.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v3.14.0
-        with:
-          commit-message: "icons: Update rendered icons and symlinks"
-          title: Auto rendered icons updates
-          labels: automated pr, new upstream
-          body: "[New rendered icons / symlinks changes](https://github.com/ubuntu/yaru/actions?query=workflow%3A%22Update+PR+on+upstream+changes+once+landed+on+ubuntu%22) by GitHub Action"
-          branch: rendered-icons
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Create or update Pull Request
+      #   if: steps.check-rendering.outputs.changed == 'true'
+      #   uses: peter-evans/create-pull-request@v3.14.0
+      #   with:
+      #     commit-message: "icons: Update rendered icons and symlinks"
+      #     title: Auto rendered icons updates
+      #     labels: automated pr, new upstream
+      #     body: "[New rendered icons / symlinks changes](https://github.com/ubuntu/yaru/actions?query=workflow%3A%22Update+PR+on+upstream+changes+once+landed+on+ubuntu%22) by GitHub Action"
+      #     branch: rendered-icons
+      #     token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: git reset --hard
 
