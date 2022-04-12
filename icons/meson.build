@@ -1,3 +1,8 @@
+PANEL_ONLY_ICONS_CATEGORIES = [
+  'animations',
+  'panel',
+]
+
 icon_flavors = [
   'default',
   'dark',
@@ -5,7 +10,10 @@ icon_flavors = [
   'mate-dark',
 ]
 
-icon_flavors += enabled_accent_colors
+foreach accent: enabled_accent_colors
+  icon_flavors += (get_option('default') ? [accent] : [])
+  icon_flavors += (get_option('dark') ? [ accent + '-dark' ] : [])
+endforeach
 
 fullcolor_path = 'src' / 'fullcolor'
 render_bitmaps = find_program(fullcolor_path / 'render-bitmaps.py', required: true)
@@ -13,6 +21,9 @@ generate_symlinks = find_program('src' / 'symlinks' / 'generate-symlinks.sh', re
 generate_index_theme = find_program('src' / 'generate-index-theme.py', required: true)
 accent_color_gtk_version_reference = '3.0'
 uses_panel_icons = get_option('ubuntu-unity') or get_option('mate')
+dark_theme = meson.project_name() + '-dark'
+index_theme = 'index.theme'
+cursor_theme = 'cursor.theme'
 render_targets = []
 render_accented_targets = []
 render_and_symlink_targets = []
@@ -23,13 +34,18 @@ cleanup_rendered_icons_targets = []
 cleanup_rendered_icons_accented_targets = []
 
 foreach flavour: icon_flavors
+  is_dark = flavour == 'dark'
+  is_dark_flavour = not is_dark and flavour.endswith('-dark')
   is_accent = enabled_accent_colors.contains(flavour)
-  if is_accent and not get_option('gtk')
+  base_flavour = is_dark_flavour ? flavour.split('-dark')[0] : ''
+  is_dark_accent = is_dark_flavour and enabled_accent_colors.contains(base_flavour)
+
+  if (is_accent or is_dark_accent) and not get_option('gtk')
     warning('GTK is not enabled, so we won\'t be able to generate accent colors')
     continue
   endif
 
-  if is_accent or get_option(flavour)
+  if (is_accent or is_dark_accent) or get_option(flavour)
     is_flavour = flavour != 'default'
     suffix = is_flavour ? '-@0@'.format(flavour) : ''
     icon_dir = 'Yaru' + suffix
@@ -162,25 +178,153 @@ foreach flavour: icon_flavors
     # not to install or generate things. Put them below!
 
     excluded_folders = []
+    excluded_files = [
+      index_theme,
+      cursor_theme,
+    ]
 
     if not uses_panel_icons
+      included_names = []
+      foreach i: range(PANEL_ONLY_ICONS_CATEGORIES.length())
+        included_names += ['-name', PANEL_ONLY_ICONS_CATEGORIES[i]]
+        if i < PANEL_ONLY_ICONS_CATEGORIES.length() - 1
+          included_names += '-or'
+        endif
+      endforeach
+
       excluded_folders += run_command('find', icon_dir,
         '-type', 'd',
-        '(',
-          '-name', 'panel',
-          '-or',
-          '-name', 'animations',
-        ')',
+        included_names.length() > 0 ? ['('] + included_names + [')'] : [],
         '-printf', '%P\\n',
       ).stdout().strip().split('\n')
+
+      if excluded_folders.length() == 1 and excluded_folders[0] == ''
+        excluded_folders = []
+      endif
+    endif
+
+    symlinks = []
+    if fs.is_dir(icon_dir)
+      message('Looking for symlinks in ' + icon_dir)
+
+      find_args = []
+      foreach f: excluded_folders
+        find_args += ['(', '-not', '-path', icon_dir / f / '*', '-prune', ')' ]
+      endforeach
+
+      local_links = run_command(
+        'find',
+        icon_dir,
+        '-type', 'l',
+        find_args,
+        check: true,
+      ).stdout().strip().split('\n')
+
+      if local_links.length() == 1 and local_links[0] == ''
+        local_links = []
+      endif
+
+      if local_links.length() > 0
+        links_targets = run_command(
+          'realpath', '-e',
+          '--relative-to=' + meson.current_source_dir() / icon_dir,
+          local_links,
+          check: true,
+        ).stdout().strip().split('\n')
+        assert(local_links.length() == links_targets.length())
+      endif
+
+      foreach i: range(local_links.length())
+        link_paths = local_links[i].split('/')
+        link_subdirs = []
+        foreach j: range(link_paths.length() - 1)
+          link_subdirs += link_paths[j+1]
+        endforeach
+        sub_link = '/'.join(link_subdirs)
+        symlinks += sub_link
+      endforeach
+
+      excluded_files += symlinks
     endif
 
     install_subdir(icon_dir,
       install_dir: theme_install_dir,
       strip_directory: true,
-      exclude_files: ['index.theme', 'cursor.theme'],
+      exclude_files: excluded_files,
       exclude_directories: excluded_folders,
     )
+
+    foreach i: range(symlinks.length())
+      link_path = fs.parent(symlinks[i])
+      symlink_dir = theme_install_dir / link_path
+      target = links_targets[i]
+
+      if link_path == fs.parent(target)
+        target = fs.name(target)
+      else
+        target = run_command(python, '-c',
+          'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))',
+          target,
+          link_path
+        ).stdout().strip()
+      endif
+
+      if meson.version().version_compare('>= 0.61')
+        install_symlink(fs.name(symlinks[i]),
+          install_dir: symlink_dir,
+          pointing_to: target,
+        )
+      else
+        meson.add_install_script('bash', '-c',
+          'mkdir -p "${DESTDIR}/@1@" && ln -svf @2@ ${DESTDIR}/@1@/@0@'.format(
+            fs.name(symlinks[i]), symlink_dir, target))
+      endif
+    endforeach
+
+    if is_dark_flavour
+      assert(get_option('dark'), 'Dark flavour @0@ enabled, but we have no dark parent'.format(flavour))
+      # Since we don't have a specific dark theme, we are just re-using
+      # the default dark theme as fallback, while the base flavour theme
+      # is still inherited as primary.
+      dark_categories = run_command(
+        'find',
+        dark_theme,
+        '!', '-path', dark_theme,
+        '-type', 'd',
+        '-mindepth', '2',
+        '-maxdepth', '2',
+        '-printf', '%P\\n',
+      ).stdout().strip()
+      dark_categories = dark_categories != '' ? dark_categories.split('\n') : []
+
+      foreach c: dark_categories
+        if fs.is_dir(icon_dir / c)
+          continue
+        endif
+
+        category = fs.name(c)
+        if not uses_panel_icons and PANEL_ONLY_ICONS_CATEGORIES.contains(category)
+          continue
+        endif
+
+        target = run_command(python, '-c',
+          'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))',
+          dark_theme / c,
+          icon_dir / fs.parent(c)
+        ).stdout().strip()
+
+        if meson.version().version_compare('>= 0.61')
+          install_symlink(category,
+            install_dir: theme_install_dir / fs.parent(c),
+            pointing_to: target,
+          )
+        else
+          meson.add_install_script('bash', '-c',
+            'mkdir -p "${DESTDIR}/@2@"; ln -svf @1@ ${DESTDIR}/@2@/@0@'.format(
+                category, target, theme_install_dir / fs.parent(c)))
+        endif
+      endforeach
+    endif
 
     # install cursor thumbnail (cinnamon only)
     if get_option('cinnamon-shell') and flavour == 'default'
@@ -190,50 +334,65 @@ foreach flavour: icon_flavors
       )
     endif
 
-    themes_f = [
-      'cursor.theme',
-      'index.theme',
-    ]
-    conf_data = configuration_data()
-    conf_data.set('ProjectName', meson.project_name())
-    conf_data.set('ThemeName', theme_name)
-    foreach theme: themes_f
-      have_file = false
-      tmp_name = flavour + '-@0@'.format(theme)
-      if fs.is_file(join_paths(icon_dir, theme))
-        file = configure_file(
-          input : join_paths(icon_dir, theme),
-          output : tmp_name,
-          configuration : conf_data
-        )
-        have_file = true
-      elif theme == 'index.theme'
-        generate_index_theme_args = []
-
-        foreach ef: excluded_folders
-          generate_index_theme_args += ['--exclude-directory', ef]
-        endforeach
-
-        file = configure_file(
-          output: tmp_name,
-          command: [
-            generate_index_theme,
-            icon_dir,
-            '--source-dir', meson.current_source_dir() / icon_dir,
-            '--output-dir', '@OUTDIR@',
-            '--output-name', '@OUTPUT@',
-            is_flavour ? ['--inherits', meson.project_name()] : [],
-          ] + generate_index_theme_args,
-        )
-        have_file = true
-      endif
-
-      if have_file
-        install_data(file, install_dir: theme_install_dir, rename: theme)
-      endif
+    generate_index_theme_args = []
+    foreach ef: excluded_folders
+      generate_index_theme_args += ['--exclude-directory', ef]
     endforeach
-    meson.add_install_script('meson/post_install.py', theme_name)
 
+    if is_flavour
+      if is_dark_flavour
+        if not fs.is_dir(theme_dir)
+          foreach c: uses_panel_icons ? [] : PANEL_ONLY_ICONS_CATEGORIES
+            generate_index_theme_args += ['--exclude-context', c]
+          endforeach
+        endif
+
+        generate_index_theme_args += [
+          '--inherits', dark_theme,
+          '--source-dir', meson.current_source_dir() / dark_theme,
+        ]
+      endif
+
+      inherited_flavour = base_flavour != '' ? '-' + base_flavour : ''
+        generate_index_theme_args += [
+          '--inherits', meson.project_name() + inherited_flavour
+        ]
+    endif
+
+    install_data(
+      configure_file(
+        output: flavour + '-@0@'.format(index_theme),
+        command: [
+          generate_index_theme,
+          icon_dir,
+          '--source-dir', meson.current_source_dir() / icon_dir,
+          '--output-dir', '@OUTDIR@',
+          '--output-name', '@OUTPUT@',
+        ] + generate_index_theme_args,
+      ),
+      install_dir: theme_install_dir,
+      rename: index_theme,
+    )
+
+    if fs.is_file(icon_dir / cursor_theme)
+      install_data(
+        configure_file(
+          input: icon_dir / cursor_theme,
+          output: flavour + '-@0@'.format(cursor_theme),
+          configuration: {
+            'ProjectName': meson.project_name(),
+            'ThemeName': theme_name,
+          },
+        ),
+        install_dir: theme_install_dir,
+        rename: cursor_theme,
+      )
+    endif
+
+    # Cleanup empty directories, as per excluded files
+    meson.add_install_script('bash', '-c',
+      'find "${DESTDIR}/@0@" -type d -empty -print -delete'.format(theme_install_dir))
+    meson.add_install_script('meson/post_install.py', theme_name)
 
     test('generate-symlinks' + suffix,
       generate_symlinks,
