@@ -11,6 +11,10 @@ $dark_5: black !default;
 $_base_color_dark: lighten($jet, 4%);
 $_base_color_light: $light_1;
 
+// @if $is_warthog_nostalgia {
+//   $window-bg-color: #e8ece8;
+// }
+
 // colors for destructive elements
 $destructive_bg_color: if($variant=='light', $red, darken($red, 10%));
 $destructive_fg_color: $light_1;
