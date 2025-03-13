@@ -36,4 +36,5 @@ jobs:
           workdir: ${{ env.BUILD_OUTPUT_DIR }}
           shell: bash
           run: |
+            apt update -y
             apt install -y --simulate ./*.deb
