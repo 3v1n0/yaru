@@ -24,25 +24,38 @@ from glob import glob
 
 # Keep this in sync with yaru-colors-defs.scss, or the input CSS in use.
 DUMMY_COLORS = {
-    'yaru_accent_bg_color': '#00ff01',
-    'yaru_accent_active_color': '#00ff02',
-    'yaru_accent_border_color': '#ff0001',
-    'yaru_accent_focused_color': '#0101ff',
-    'yaru_bg_color': '#ffff00',
-    'yaru_border_color': '#ff00ff',
-    'yaru_disabled_bg_color': '#ffff02',
-    'yaru_switch_bg_color': '#ffff01',
+    'accent-color': '#00ff03',
+    'accent-color-hc': '#00ff04',
+    'accent-bg-color': '#00ff01',
+    'accent-bg-color-hc': '#00ff05',
+    'accent-active-color': '#00ff02',
+    'accent-active-color-hc': '#00ff06',
+    'accent-border-color': '#ff0001',
+    'accent-border-color-hc': '#ff0002',
+    'accent-focused-color': '#0101ff',
+    'accent-focused-color-hc': '#0101f1',
+    'bg-color': '#ffff00',
+    'border-color': '#ff00ff',
+    'border-color-hc': '#ff00f1',
+    'disabled-bg-color': '#ffff02',
+    'disabled-bg-color-hc': '#ffff04',
+    'switch-bg-color': '#ffff01',
+    'switch-bg-color-hc': '#ffff05',
+    'check-bg-color': '#ffff03',
+    'check-bg-color-hc': '#ffff06',
 }
+
+assert len(set(DUMMY_COLORS.values())) == len(DUMMY_COLORS.values())
 
 def read_colors_replacements(css_file):
     colors_replacements = {}
 
     for l in css_file.readlines():
         for line in l.split('//')[0].split(';'):
-            if not line.startswith('@define-color '):
+            if '-yaru-' not in line:
                 continue
 
-            [_, named_color, color] = line.split(' ')
+            [named_color, color] = line.split('-yaru-', 1)[-1].split(': ')
             colors_replacements[DUMMY_COLORS[named_color]] = color
             print(named_color, color, f'(replaces {DUMMY_COLORS[named_color]})')
 

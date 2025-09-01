@@ -6,6 +6,10 @@ on:
   schedule:
     - cron: '8 0 * * *'
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   refresh-upstream:
     name: Check for upstream symbolic icons changes
@@ -19,7 +23,7 @@ jobs:
             upstreambranch: master,
             localbranch: adwaita-symbolics,
             projectdir: adwaita-icon-theme,
-            src: Adwaita/scalable,
+            src: Adwaita/symbolic,
             dest: icons/upstream/adwaita-symbolics.list
           },
           {
@@ -44,7 +48,7 @@ jobs:
           {
             project: baobab symbolics,
             repo: "https://gitlab.gnome.org/GNOME/baobab.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: baobab-symbolics,
             projectdir: baobab,
             src: .,
@@ -53,7 +57,7 @@ jobs:
           {
             project: gnome-characters symbolics,
             repo: "https://gitlab.gnome.org/GNOME/gnome-characters.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: gnome-characters-symbolics,
             projectdir: gnome-characters,
             src: .,
@@ -89,7 +93,7 @@ jobs:
           {
             project: gnome-calendar symbolics,
             repo: "https://gitlab.gnome.org/GNOME/gnome-calendar.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: gnome-calendar-symbolics,
             projectdir: gnome-calendar,
             src: .,
@@ -125,7 +129,7 @@ jobs:
           {
             project: gnome-todo symbolics,
             repo: "https://gitlab.gnome.org/GNOME/gnome-todo.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: gnome-todo-symbolics,
             projectdir: gnome-todo,
             src: .,
@@ -134,7 +138,7 @@ jobs:
           {
             project: gnome-usage symbolics,
             repo: "https://gitlab.gnome.org/GNOME/gnome-usage.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: gnome-usage-symbolics,
             projectdir: gnome-usage,
             src: .,
@@ -143,7 +147,7 @@ jobs:
           {
             project: gnome-control-center symbolics,
             repo: "https://gitlab.gnome.org/GNOME/gnome-control-center.git",
-            upstreambranch: master,
+            upstreambranch: main,
             localbranch: gnome-control-center-symbolics,
             projectdir: gnome-control-center,
             src: .,
@@ -170,7 +174,7 @@ jobs:
       ]
     steps:
       # Checkout code
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Download from ${{ matrix.buildenv.repo }}, on branch ${{ matrix.buildenv.upstreambranch }}
         id: checknewupstream
         run: |
@@ -196,7 +200,7 @@ jobs:
           PROJECT_DIR: ${{ matrix.buildenv.projectdir }}
       - name: Create or update Pull Request
         if: steps.checknewupstream.outputs.modified == 'true'
-        uses: peter-evans/create-pull-request@v3.14.0
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: New upstream symbolic icons list for ${{ matrix.buildenv.project }}
           title: Auto update new upstream symbolic icons list for ${{ matrix.buildenv.project }}

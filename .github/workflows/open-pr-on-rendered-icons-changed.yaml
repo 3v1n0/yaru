@@ -9,13 +9,17 @@ on:
   schedule:
     - cron: '8 0 * * *'
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   refresh-upstream:
     name: Check rendered icon changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Yaru code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
@@ -26,7 +30,7 @@ jobs:
           echo "::set-output name=push-branch::auto-rendered-icons"
 
       - name: Check Source changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: check-changed
         with:
           base: ${{ steps.env.outputs.push-branch }}
@@ -50,43 +54,65 @@ jobs:
           sudo apt install software-properties-common
           sudo add-apt-repository ppa:inkscape.dev/stable
           sudo apt update
-          sudo apt install sassc python3-pip xvfb inkscape optipng scour
+          sudo apt install \
+            inkscape \
+            libglib2.0-dev-bin \
+            optipng \
+            python3-pip \
+            sassc \
+            scour \
+            xvfb \
+            yaru-theme-icon
           sudo pip3 install meson ninja
 
       - name: Configure project
         if: ${{ steps.check-changed.outputs.changes != '[]' }}
         run: |
-          meson _build -Dmate=true
+          meson setup _build \
+            -Dmate=true \
+            -Dmate-dark=true \
+            -Dgnome-shell=false \
+            -Dgtk=true \
+            -Dgtksourceview=false \
+            -Dsessions=false \
+            -Dsounds=false \
+            -Daccent-colors="bark, sage, olive, viridian, prussiangreen, blue, purple, magenta, red, yellow, wartybrown"
 
       - name: Render default icons and generate symlinks
         if: steps.check-changed.outputs.default == 'true'
         run: |
-          ninja -C _build cleanup-rendered-icons-default
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-default
+          ninja -C _build -v \
+            cleanup-rendered-icons-default \
+            cleanup-symlinks-default
+          ninja -C _build -v render+symlink-icons-default
 
       - name: Render mate icons and generate symlinks
         if: steps.check-changed.outputs.mate == 'true'
         run: |
-          ninja -C _build cleanup-rendered-icons-mate
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-mate
+          ninja -C _build -v \
+            cleanup-rendered-icons-mate \
+            cleanup-symlinks-mate
+          ninja -C _build -v render+symlink-icons-mate
 
       - name: Render accented icons and generate symlinks
         if: steps.check-changed.outputs.accented == 'true'
         run: |
-          ninja -C _build cleanup-rendered-icons-accented
-          xvfb-run -a -- ninja -C _build -v render+symlink-icons-accented
+          ninja -C _build -v \
+            cleanup-rendered-icons-accented \
+            cleanup-symlinks-accented
+          ninja -C _build -v render+symlink-icons-accented
 
       - name: Symlink all icons
         if: steps.check-changed.outputs.symlinks == 'true'
         run: |
           find icons/Yaru{,-*} -type l -delete
-          xvfb-run -a -- ninja -C _build -v symlink-icons
+          ninja -C _build -v symlink-icons
 
       - name: Check Rendering changes
         if: ${{ steps.check-changed.outputs.changes != '[]' }}
         id: check-rendering
         run: |
-          if git diff --exit-code $GITHUB_BASE_REF; then
+          if [ -z "$(git status --porcelain)" ]; then
             changed=false
           else
             changed=true
@@ -95,7 +121,7 @@ jobs:
 
       - name: Create or update Pull Request
         if: steps.check-rendering.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v3.14.0
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: "icons: Update rendered icons and symlinks"
           title: Auto rendered icons updates

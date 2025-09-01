@@ -4,6 +4,7 @@
 
 $base_color: if($variant == 'light', #ffffff, lighten($jet, 6%));
 $text_color: if($variant == 'light', black, white);
+$caret_color: if($variant == 'light', lighten($text_color, 5%), darken($text_color, 3%));
 $bg_color: if($variant == 'light', #FAFAFA, lighten($jet, 8%));
 $fg_color: if($variant == 'light', $inkstone, $porcelain);
 
@@ -22,8 +23,8 @@ $link_visited_color: if($variant == 'light', darken($selected_bg_color, 20%), li
 $top_hilight: $borders_edge;
 $dark_fill: mix($borders_color, $bg_color, 50%);
 $headerbar_color: if($variant == 'light', lighten($bg_color, 5%), darken($bg_color, 3%));
-$menu_color: if($variant == 'light', $bg_color, $base_color);
-$popover_bg_color: if($variant == 'light', $bg_color, $base_color);
+$menu_color: if($variant == 'light', $bg_color, lighten($jet, 2%));
+$popover_bg_color: $menu_color;
 $popover_hover_color: transparentize($fg_color, 0.85);
 
 $scrollbar_bg_color: if($variant == 'light', mix($bg_color, $fg_color, 80%), mix($base_color, $bg_color, 50%));
@@ -73,7 +74,9 @@ $backdrop_scrollbar_slider_color: mix($backdrop_fg_color, $backdrop_bg_color, 40
 $backdrop_menu_color: if($variant == 'light', $backdrop_base_color, mix($backdrop_bg_color, $backdrop_base_color, 20%));
 
 //special cased widget colors
-$suggested_bg_color: if($variant == 'light', lighten($green, 5%), darken($green, 5%));
+$panel_bg_color: if($variant == 'light', darken($porcelain, 4%), $jet);
+$panel_fg_color: $fg_color;
+$suggested_bg_color: if($accent_bg_color == $orange, if($variant == 'light', lighten($green, 5%), darken($green, 5%)), $accent_bg_color);
 $suggested_border_color: if($variant=='light', darken($suggested_bg_color, 5%), darken($suggested_bg_color, 10%));
 $progress_bg_color: if($variant== 'light', lighten($accent_bg_color, 10%), lighten($accent_bg_color, 5%));
 $progress_border_color: $progress_bg_color;
@@ -86,3 +89,10 @@ $coloured_focus_border_color: transparentize(white, 0.3);
 // Yaru: Ignore transformations when using dark accent colors
 $progress_bg_color: $accent_bg_color;
 $checkradio_bg_color: $accent_bg_color;
+
+// Optimize accent-color definition for default background colors
+@import 'sass-utils';
+$contrast_target: if($variant=='light', 6, 5.5);
+$link_color: optimize-contrast($bg_color, $accent_bg_color, $target: $contrast_target);
+$link_visited_color: if($variant=='light', darken($link_color, 10%),
+                        optimize-contrast($bg_color, $accent_bg_color));

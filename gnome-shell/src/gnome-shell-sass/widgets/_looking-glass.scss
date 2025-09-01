@@ -1,15 +1,54 @@
 /* Looking Glass */
 
+// common
+.lg-dialog {
+
+  StEntry {
+    @extend %osd_entry;
+    min-height: to_em(22px);
+  }
+
+  // override link color since OSD style
+  $lg_link_color: st-lighten(-st-accent-color, 20%);
+  .shell-link {
+    color: $lg_link_color;
+    &:hover { color: st-lighten($lg_link_color, 10%); }
+    &:active { color: st-darken($lg_link_color, 10%); }
+   }
+
+  .actor-link {
+    @extend %monospace;
+    color: st-darken($osd_fg_color, 20%);
+    &:hover { color:$osd_fg_color; }
+    &:active { color: st-lighten($osd_fg_color, 20%); }
+    & StIcon { icon-size: 12px; }
+   }
+}
+
+.lg-completions-text {
+  @extend %caption;
+  font-style: italic;
+}
+
 // Dialog
 #LookingGlassDialog {
-  background-color: $osd_bg_color;
-  border-radius: 0 0 $modal_radius $modal_radius;
-  border-top-width: 0;
-  border: 1px solid $osd_outer_borders_color;
+
+  @extend %osd_panel;
+  background-color: transparentize($osd_bg_color,0.02);
   color: $osd_fg_color;
+
+  border-radius: $modal_radius;
+  margin-top: $base_margin;
+  border: 2px solid transparent;
   padding: $base_padding;
   spacing: $base_padding;
-  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px 0 $shadow_color;
+
+  @if $contrast == 'high' {
+    border-color: $hc_inset_color;
+    background-color: $osd_bg_color;
+    box-shadow:none;
+  }
 
   & > #Toolbar {
     border: none;
@@ -19,130 +58,177 @@
     spacing: $base_padding;
 
     .lg-toolbar-button {
-      padding: $base_padding $base_padding*2;
-      @extend %button;
+      @extend %osd_button;
+      padding: $base_padding $base_padding * 2;
 
       & > StIcon { icon-size: $base_icon_size; }
     }
   }
 
-  .labels { 
+  .labels {
     spacing: $base_padding;
   }
 
   .notebook-tab {
-    -natural-hpadding: $base_padding*2;
-    -minimum-hpadding: $base_padding*2;
-
-    font-weight: bold;
-    padding: $base_padding $base_padding*2;
-    color: darken($osd_fg_color, 15%);
-    transition-duration: 100ms;
-    box-shadow:none;
-    border:none;
-    border-radius: $base_border_radius - 2px;
+    @extend %osd_button_flat;
     background-color: transparent;
-
-    &:hover {
-      color: $osd_fg_color;
-      background-color: transparentize($osd_fg_color, 0.95);
-    }
-
+    -natural-hpadding: $base_padding * 2;
+    -minimum-hpadding: $base_padding * 2;
+    padding: $base_padding $base_padding * 2;
     &:selected {
-      color: $osd_fg_color;
-      background-color: transparentize($osd_fg_color, 0.9);
+      @include button(active, $tc:$osd_fg_color, $c:$osd_bg_color, $always_dark: true);
     }
   }
-
-  StBoxLayout#EvalBox { padding: 4px; spacing: $base_padding; padding: $base_padding; }
-  StBoxLayout#ResultsArea { spacing: $base_padding; padding: $base_padding; }
-}
-
-.lg-dialog {
-  color: $osd_fg_color; // Yaru: needed for the light theme
-  StEntry {
-    background-color: transparentize(lighten($osd_bg_color, 5%), 0.4);
-    color: $osd_fg_color;
-    border-color: transparentize($osd_fg_color, 0.8);
-    min-height: 22px;
-    selection-background-color: $selected_bg_color;
-    selected-color: $selected_fg_color;
-    &, &:focus { // Yaru change: remove box-shadow because of ugly render
-      box-shadow: none;
-    }
-  }
-
-  .shell-link {
-    color: $link_color;
-    &:hover { color: lighten($link_color, 10%); }
-    &:active { color: darken($link_color, 10%); }
-   }
-
-  .actor-link {
-    color: $insensitive_fg_color;
-    &:hover { color: lighten($insensitive_fg_color, 20%); }
-    &:active { color: darken($insensitive_fg_color, 20%); }
-   }
-}
-
-.lg-completions-text {
-  @extend %caption;
-  font-style: italic;
-  color: $osd_fg_color; // Yaru: needed for the light theme
-}
-
-.lg-obj-inspector-title {
-  spacing: $base_padding;
-  color: $osd_fg_color; // Yaru: needed for the light theme
-}
-
-.lg-obj-inspector-button {
-  border: 1px solid $osd_borders_color;
-  padding: 4px;
-  border-radius: $base_border_radius;
-  &:hover { border: 1px solid #ffffff; }
-  color: $osd_fg_color; // Yaru: needed for the light theme
-}
-
-// Extensions
-#lookingGlassExtensions { padding: $base_padding; }
-
-.lg-extensions-list {
-  padding: $base_padding;
-  spacing: $base_padding;
-}
-
-.lg-extension {
-  padding: $base_padding*2;
-  @include card;
-}
-
-.lg-extension-name {
-  @extend %heading;
-}
-
-.lg-extension-meta {
-  spacing: $base_padding;
 }
 
 // Inspector
 #LookingGlassPropertyInspector {
-  background: $osd_bg_color;
+
+  background-color: $osd_bg_color;
+  color: $osd_fg_color;
+  border-radius: $modal_radius;
   border: 1px solid $osd_borders_color;
-  border-radius: $base_border_radius;
-  padding: $base_padding;
+  padding: $base_padding * 2;
+
+  @if $contrast == 'high' {
+    border-color: $hc_inset_color;
+  }
+
+  .lg-obj-inspector-title {
+    @extend %heading;
+    spacing: $base_margin;
+  }
+
+  .lg-obj-inspector-close-button,
+  .lg-obj-inspector-button {
+    @extend %osd_button;
+    padding: $base_padding $base_padding * 2;
+  }
+
+  .lg-obj-inspector-close-button {
+    margin: $base_margin;
+    padding: $base_padding;
+    border-radius: $forced_circular_radius;
+    > StIcon {
+      icon-size: $base_icon_size;
+    }
+  }
 }
 
-.lg-debug-flag-button {
-  StLabel { padding: $base_padding, 2 * $base_padding; }
 
-  color: $fg_color;
-  &:hover { color: lighten($fg_color, 20%); }
-  &:active { color: darken($fg_color, 20%); }
+// Evaluator
+#LookingGlassEvaluator {
+  padding: $base_padding;
+
+  .evaluator-results {
+    @extend %monospace;
+    spacing: $base_padding;
+  }
 }
 
-.lg-debug-flags-header {
-  padding-top: 2 * $base_padding;
+// Window List
+#LookingGlassWindows {
+
   padding: $base_padding;
-  @extend %title_2;
+  spacing: $base_padding;
+
+  .lg-window {
+    @extend %card_common;
+    @include button(normal, $tc:$osd_fg_color, $c:$osd_bg_color, $always_dark: true);
+    margin: 0;
+    padding: $base_padding * 2;
+
+    .lg-window-name {
+      @extend %heading;
+    }
+
+    .lg-window-props-box {
+      .lg-window-props {
+      }
+    }
+  }
+}
+
+// Extensions
+#LookingGlassExtensions {
+
+  .lg-extensions-list {
+    padding: $base_padding;
+    spacing: $base_padding;
+  }
+
+  .lg-extension {
+    @extend %card_common;
+    @include button(normal, $tc:$osd_fg_color, $c:$osd_bg_color, $always_dark: true);
+    margin: 0;
+    spacing: $base_margin;
+    padding: $base_padding * 2;
+
+    .lg-extension-name {
+      @extend %heading;
+      color: $osd_fg_color !important;
+    }
+
+    .lg-extension-description {
+    }
+
+    .lg-extension-meta {
+      spacing: $base_padding * 2;
+    }
+  }
+
+  .lg-extensions-none {
+    @extend %title_4;
+    color: transparentize($osd_fg_color, 0.5);
+  }
+}
+
+// Actors
+#LookingGlassActors {
+  padding: $base_padding;
+  spacing: $base_margin;
+}
+
+// Debug
+#LookingGlassDebugFlags {
+
+  .lg-debug-flags-header {
+    padding: $base_padding;
+    padding-top: 2 * $base_padding;
+    @extend %title_4;
+  }
+
+  .lg-debug-flag-button {
+    @extend %osd_button;
+    padding: $base_padding * 1.5 $base_padding * 2;
+    margin-bottom: $base_padding;
+
+    StLabel {
+      @extend %monospace;
+      font-weight: normal !important;
+    }
+
+    // switch style overrides since lg is OSD style
+    .toggle-switch {
+      @if $contrast == 'high' {
+        background: transparentize(white, .7);
+        &:hover {
+          background: transparentize(white, .6);
+        }
+      } @else {
+        background: transparentize(white, .85);
+        &:hover {
+          background: transparentize(white, .8);
+        }
+      }
+      &:checked {
+        background: -st-accent-color;
+        color: -st-accent-fg-color;
+        &:hover {
+          background-color: st-lighten(-st-accent-color, 5%);
+          color: st-lighten(-st-accent-fg-color, 5%);
+        }
+      }
+    }
+  }
 }

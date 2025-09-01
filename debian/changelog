@@ -1,3 +1,779 @@
+yaru-theme (25.10.1-0ubuntu1) questing; urgency=medium
+
+  [ walangpart2 ]
+  * modified dock radii
+
+  [ Vincent Renzo Quilon ]
+  * Icon For Papers
+  * Add missing icons for gnome Papers
+  * Add symbolic icons for Loupe
+
+  [ ubuntujaggers ]
+  * Quite a few more smaller square icons
+
+  [ Marco Trevisan (Treviño) ]
+  * gtk-4/tweaks: Actually override the default windowcontrols definition
+    (LP: #2107388)
+  * gnome-shell: Use upstream a11y icon
+  * gtk/gtk-4.0: Sync upstream changes
+  * gnome-shell/upstream: Sync with ubuntu fork
+  * gnome-shell: Sync with upstream changes
+
+  [ ochi12 ]
+  * added infinity-symbolic
+  * addition: fixed timer-symbolic and derived for caffeine timer symbolic
+    components
+  * final changes to timer-*-symbolic icons
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 11 Jul 2025 06:00:54 +0200
+
+yaru-theme (25.04.2-0ubuntu1) plucky; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * gtk/common: Sync with window controls upstream changes (LP: #2107388)
+  * tweaks: Adapt to window controls adjustments the upstream changes
+    (LP: #2107388)
+  * tweaks: Set proper size for window controls buttons (LP: #2106784)
+  * gtk/tweaks: Use window controls padding and margins to be consistent with
+    libadwaita (LP: #2106784)
+  * gtk/meson: Fix parsing of accent and accent-optimized color codes
+    (LP: #2107420)
+  * gtk-2.0: Add wartybrown accented theme and assets (LP: #2107421)
+    We didn't generate these assets, so some elements of the theme were not
+    consistent with the actual accent, but more importantly when using the
+    dark mode, the applications were close to unusable.
+    Thus the huge diff, as we had to re-generate the theme assets for the
+    accent.
+    The assets and theme definitions are actually not new, so there's no UI
+    change involved, they are just the same assets we ship for all the other
+    accents, but rendered with the wartybrown color.
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 16 Apr 2025 03:47:08 +0200
+
+yaru-theme (25.04.1-0ubuntu1) plucky; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * gnome-shell: Add missing keyboard-zwnj-symbolic icon
+  * ci: Use minimal configuration for rendering icons
+  * ci: Install base theme to make inkscape work
+  * icons/render-bitmaps: Do not fail if directory exists already
+  * ci: Enable GTK theme for rendering
+  * ci: Install hub from sources instead of using a precompiled binary
+  * ci: Run track-lp-issues job also on script changes
+  * ci: Drop the in-house action to build deb files, reusing desktop team one
+  * common: Generalize the yaru variants computation
+  * gtk: Use meson native features to rename configured files
+  * common/accent-colors: Use same contrast target as in libadwaita
+  * cleanup: Remove warty nostalgia special theming
+  * gnome-shell: Use upstream -st-accent-color
+  * gnome-shell-colors: Reduce the delta with upstream default values
+  * gnome-shell: Simplify colors code by just overriding what we need
+  * debian: Bump breaks on gnome-shell lower than 47
+  * icons: Add power saving icon symlink for control center
+  * gnome-shell: Merge with GNOME 48 changes (LP: #2102051)
+  * gnome-shell/keyboard: Simplify the logic to support light theme
+  * gnome-shell: Add new symbolic icons and adapt naming (LP: #2101836)
+  * debian/control: Bump breaks to gnome-shell 47
+  * gnome-shell: Drop the custom yaru spinner icon
+  * icons: Optimize symbolic icons
+  * icons: Update rendered icons and symlinks
+
+  [ walangpart2 ]
+  * Added redesigned org.gnome.Software icon
+  * Created org.gnome.Snapshot Link Targetting the camera-app icon.
+  * Proposal: Small Change to Zipper Styled Mimetypes
+  * Yarufy EarTag Icon
+
+  [ Paul Kepinski ]
+  * GnomeShell: Yaruify upstream icons
+
+  [ Muqtadir ]
+  * misc: tweak recent fullcolor icons
+  * ci: add missing deps for build sequence
+
+  [ Tobias Rapp ]
+  * icons: Add mimetype icon for Typst source files
+
+  [ ochi12 ]
+  * adjusted radius and on-click color for notification banner. Response to issue #4082
+  * included onclick color adjustment to light theme as well
+  * Added symlink for context:categories named org.gnome.Settings-screen-lock-symbolic.svg to suppliment icon falling back to hi color on gnome-control-center under 'Privacy & security'/'Screen Lock'
+  * Added symlink for context:categories named org.gnome.Settings-network-workgroup-symbolic.svg to suppliment icon falling back to hicolor on gnome-control-center under 'Privacy & security'/'Connectivity'
+  * added missing emblem icons for Nautilus
+  * Edited generate-symlinks.sh to include context . Added org.gnome.Nautilus.list. Linked nautilus-file-chooser-options-symbolic.svg -> nautilus-search-filters-symbolic.svg
+  * added missing document-admin-symbolic.svg for Text Editor
+  * added missing cameras-symbolic.svg for Gnome Snapshot
+  * added missing camera-timer-symbolic.svg for Gnome Snapshot
+  * Yarufy Sysprof app fullcolor and app symbolic with accent support.
+  * reworked Sysprof destop icon to fit on smaller sizes
+  * added missing symbolic icons for sysprof
+  * Added Epiphany's Missing Yaru Symbolics
+  * reworked the library icon for epiphany
+
+  [ ubuntujaggers ]
+  * Some smaller square icons
+
+  [ Alessandro Astone ]
+  * debian: Suggest humanity-icon-theme
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 14 Mar 2025 02:53:01 +0100
+
+yaru-theme (24.10.4-0ubuntu1) oracular; urgency=medium
+
+  [ Paul Kepinski ]
+  * Update gnome-system-monitor symbolics
+  * Update gnome-calendar symbolics
+  * Update gnome-control-center symbolics
+  * Update gnome-software symbolics
+
+  [ Marco Trevisan (Treviño) ]
+  * New upstream release
+  * gnome-shell: Use button style for auth dialog list items (LP: #2080321)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 11 Sep 2024 05:13:48 +0200
+
+yaru-theme (24.10.3-0ubuntu1) oracular; urgency=medium
+
+  * New upstream version
+  * icons: Update rendered icons and symlinks
+  * gnome-shell: Sync dock theming with upstream
+  * gnome-shell/dock: Use the same style for the notification badges in overview
+  * gnome-shell/dock: Move the progress bar at the bottom of the icon
+  * gnome-shell/slider: Drop yaru customization as border is not not supported
+  * gnome-shell/slider: Use lighter color for the handler on light themes
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Sat, 07 Sep 2024 02:45:49 +0200
+
+yaru-theme (24.10.2-0ubuntu1) oracular; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * Upload to oracular
+  * gtk: Sync with upstream scale marks fixes
+  * gtk: Sync default wm colors with upstream
+  * build: Depend on meson 0.60
+  * debian/accent-color-migration: Actually reset the theme
+  * common: Generalize warty nostalgia theme detection
+  * accent-colors: Ensure accent color has the right contrast
+  * icons: Regenerate assets with proper contrasting colors
+  * accent-color: Define the warty bg color globally
+  * gtk: Use the warty bg color
+  * icons: Add GNOME shell captive portal symbolic icon
+  * gnome-shell: Use CSS-based checkbox mark
+  * gnome-shell: Sync upstream changes
+  * gnome-shell: Use CSS-based switches
+  * gnome-shell: Remove support for colorable assets
+  * gnome-shell: Merge with non-accent color related upstream changes
+  * gtk: Sync with upstream scale marks fixes
+  * gtk: Sync default wm colors with upstream
+  * debian/control: Depend on meson 0.60
+  * debian/accent-color-migration: Actually reset the theme
+  * common: Generalize warty nostalgia theme detection
+  * accent-colors: Ensure accent color has the right contrast
+  * icons: Regenerate assets with proper contrasting colors
+  * accent-color: Define the warty bg color globally
+  * gtk: Use the warty bg color
+  * icons: Add GNOME shell captive portal symbolic icon
+  * gnome-shell: Use CSS-based checkbox mark
+  * gnome-shell: Sync upstream changes
+  * gnome-shell: Use CSS-based switches
+  * gnome-shell: Remove support for colorable assets
+  * gnome-shell: Merge with non-accent color related upstream changes
+  * icons: Update rendered icons and symlinks
+
+  [ Bingo90 ]
+  * Remove an issue causing ".login-dialog-prompt-entry"
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 06 Sep 2024 10:00:23 +0200
+
+yaru-theme (24.10.1-0ubuntu1) oracular; urgency=medium
+
+  * meson: Do not build bark and viridian by default anymore
+  * common/accent-colors: Add yellow accent color that follows upstream
+  * icons/Yaru-yellow: Render icons for the yellow accent
+  * icons/Yaru-yellow: Generate symlinks
+  * debian/migrations: Add migration script from theme names to accent colors
+  * accent-colors: Add warty-brown accent
+  * icons: Generate icons and symlinks for warty brown
+  * sounds: Add warty startup sonud
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 15 Aug 2024 09:50:06 -0400
+
+yaru-theme (24.04.3-0ubuntu1) oracular; urgency=medium
+
+  [ Thomas Staudinger ]
+  * gtksourceview: Add support for new libgedit-gtksourceview xml scheme
+    The `kind` attribute is now mandatory, `version` and `underline-color`
+    removed
+
+  [ Marco Trevisan (Treviño) ]
+  * gnome-shell/login-lock: Fix QRCode dialog colors when using light theme
+    (LP: #2067661)
+  * gnome-shell/login-lock: Use proper background qrcode colors in light mode
+    (LP: #2067661)
+  * gnome-shell: Use ubuntu mono for monospace
+  * gnome-shell: Sync fixes from gnome-46 branch:
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/7488
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/7400
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/6024
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/7628
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/7511
+      https://gitlab.gnome.org/GNOME/gnome-shell-extensions/-/issues/507
+      https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/7620
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 05 Jun 2024 02:16:01 +0200
+
+yaru-theme (24.04.2-0ubuntu1) noble; urgency=medium
+
+  * calendar: Use the same border radius we use for quicksettings
+    (LP: #2062388)
+  * gnome-shell/dock: Tune the icon selection colors (LP: #2061729)
+  * gnome-shell: Use our dash color as the system overlay bg color
+    (LP: #2062121)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 18 Apr 2024 19:06:05 +0200
+
+yaru-theme (24.04.1-0ubuntu1) noble; urgency=medium
+
+  [ Muqtadir ]
+  * Sync with `org.gnome.Settings` symbolic icons changes
+  * add org.gnome.Nautilus* symbolic icons and revert app-grid icon
+    (LP: #2062046)
+
+  [ Muqtxdir ]
+  * add @ubuntujaggers refined app-center fullcolor icon (no visual changes)
+
+  [ Marco Trevisan (Treviño) ]
+  * gtk/common: Sync with upstream fixes
+  * icons: Remove start-here-symbolic symlink that was breaking view-app-grid.
+  * icons: Add view-app-grid-ubuntu-symbolic symlink to start-here
+    (LP: #2060816).
+  * gnome-shell/dock: Use more visible background on highlighted icons
+    (LP: #2061729)
+  * gnome-shell/dock: Draw focused icons with highlight background
+    (LP: #2062044)
+  * icons: Re-render icons and regenerate symlinks
+  * debian/control: Add Breaks on ubuntu-dock << 90~
+    It doesn't really break it but if we'd release this version of the icon
+    theme before of the new dock, we'd end up changing the dock's show-apps
+    icon, breaking the UI freeze (related to lp:2060816).
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 17 Apr 2024 21:44:55 +0200
+
+yaru-theme (24.04.0-0ubuntu1) noble; urgency=medium
+
+  [ Paul Kepinski ]
+  * Change upstream gnome-usage branch to main
+  * Sync icon theme with upstream
+  * Revert panel height to upstream
+  * Gnome Shell upstream sync
+  * GS: fix entries colors
+  * Revert progress color to pure accent
+  * GS: fix slider height
+  * Fix looking glass extensions cards
+  * yaru_icons.dart sync
+
+  [ Marco Trevisan (Treviño) ]
+  * New upstream snapshot for GNOME Shell
+  * gtk: Sync with upstream changes
+  * gnome-shell/data: Sync icons with gnome-shell 46
+  * gnome-shell/data: Strip blanks from icons svgs
+  * gnome-shell: Add dark/light variants for process-working icon
+  * gnome-shell/meson: add xml-stripblanks pre-process for svg icons
+  * gnome-shell: Merge with upstream changes for GNOME 46
+  * gnome-shell/dock: Merge with some remaining upstream changes
+  * gnome-shell/dock: Override the dash theming to use the dock color on items
+  * gnome-shell/search-entry: Fix invisible hint text in light themes
+  * gnome-shell/looking-glass: Drop unused changes
+  * debian/control: Mark as breaking gnome-shells earlier than 46
+  * gnome-shell/colorable-assets: Update with upstream assets
+  * gnome-shell: Include styles for multiple login system support
+  * gnome-shell: Fix insensitive button bg in lockscreen with light themes
+
+  [ Jeremy Bícha ]
+  * gtksourceview: Support gedit's forked library
+  * Update deb packaging for libgedit-gtksourceview
+
+  [ Daniel van Vugt ]
+  * gnome-shell: Don't give login-dialog another background-color
+
+  [ Sergio Costas ]
+  * Update Yaru to new Dash-to-Dock code
+  * Add extra changes from DashToDock
+  * Fix apps view
+
+  [ Feichtmeier ]
+  * New upstream symbolic icons list for gnome-usage symbolics
+
+  [ Jupi007 ]
+  * icons: Optimize symbolic icons
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 22 Mar 2024 10:01:18 +0100
+
+yaru-theme (23.10.0-0ubuntu1) mantic; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * meson: Bump version to 23.10.0
+  * debian/README.sources: Explain better the role of the upstream folders
+  * gnome-shell: Merge with GNOME 45 upstream changes
+  * gnome-shell, drawing: Use insensitive color for undecorated buttons
+  * common: Use focus border color for system entries focus ring
+  * sessions: Add variant preference depending on default shell variant
+  * gnome-shell: Remove some Yaru delta that is not needed anymore
+  * colors: Use system-borders-colors instead of our defined borders-color-dark
+  * gnome-shell: Update toggle-on/off high-contrast assets to match upstream
+  * yaru-color-defs: Increase switch bg contrast on dark
+  * colorize-dummy: Add support for high-contrast colors
+  * toggle-on-hc: Use high contrast accent color
+  * gnome-shell: Use shared definitions for yaru colors only
+  * gnome-shell: Use dark mode for high-contrast theme
+  * meson: Use blue-dark as default high-contrast variant
+  * quick-settings: Compute taggle-bg-color using optimize contrast function
+  * yaru-colors: Redefine selected-bg-color using contrast-optimized value
+  * gnome-shell, quick-settings: Use default upstream implementation
+  * debian/control: Set breaks on gnome-shell << 45~
+
+  [ Paul Kepinski ]
+  * Build(deps): bump peter-evans/create-pull-request from 4 to 5
+  * Sync Gtk4 with upstream
+  * Fix cinnamon build
+  * Sync cinnamon with upstream
+  * Sync Gnome Shell icons with upstream
+  * Sync icon theme with upstream
+  * Cinnamon: Drop inverted panel, fix accent and cleanups
+  * Cinnamon: Fix menu-favorites-box background
+  * Sync Gnome Shell with upstream
+  * Add start-here and view-app-grid fullcolor icons
+  * Add missing application-x-zerosize mimetype
+  * Fix panel icons size
+  * Add 22x22 size of address-book-app icon
+  * Sync Gtk4 with upstream
+  * Sync Gnome Shell icons with upstream
+  * Sync Cinnamon with upstream
+  * Fix keyboard brightness icons
+
+  [ github-actions[bot] ]
+  * New upstream snapshot for Cinnamon
+  * New upstream snapshot for GNOME Shell Icons
+  * New upstream snapshot for GNOME Shell Resources
+  * New upstream snapshot for GTK4
+  * New upstream symbolic icons list for Adwaita symbolics
+  * New upstream symbolic icons list for gnome-calendar symbolics
+  * New upstream symbolic icons list for gnome-usage symbolics
+  * icons: Update rendered icons and symlinks
+
+  [ Himadri Sekhar Basu ]
+  * Prepare cinnamon theme variants
+
+  [ Sebastien ]
+  * Remove the amazon store icons
+
+  [ KevinDuan ]
+  * Remove duplicated icons
+
+  [ Jupi007 ]
+  * icons: Update rendered icons and symlinks
+
+  [ Mike Gabriel ]
+  * debian/control: Remove empty lines at EOF.
+  * debian/control: Bump Standards-Version: to 4.6.1. No changes needed.
+  * debian/control: Add Rules-Requires-Root: field and set it to 'no'.
+  * debian/upstream/metadata: Add file. Comply with DEP-12.
+  * debian/copyright: remove CI configuration for Github
+  * debian/copyright: Improve copyright attributions.
+  * debian/control: Bump Standards-Version: to 4.6.2. No changes needed.
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 29 Aug 2023 00:39:34 +0200
+
+yaru-theme (23.04.4-0ubuntu1) lunar; urgency=medium
+
+  [ Paul Kepinski ]
+  * GS: fix light theme invisible text (LP: #2012991)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 13 Apr 2023 22:17:56 +0200
+
+yaru-theme (23.04.3-0ubuntu1) lunar; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * meson: Release 23.04.3
+  * icons/meson: Explicitly list the icons pointing to wrong locations
+  * icons/meson: Remove symbolic links for flavours
+  * tweaks: Use consistent size for default decoration window buttons
+    (LP: #2012733, #2013271)
+  * tweaks: Use consistent horizontal margin for window buttons
+  * icons: Optimize symbolic icons
+  * icons: Update rendered icons and symlinks
+
+  [ Paul Kepinski ]
+  * Add missing folds on libreoffice-oasis-formula icon
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 04 Apr 2023 21:56:24 +0200
+
+yaru-theme (23.04.2-0ubuntu1) lunar; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * New upstream Release 23.04.2
+  * sass-util: Fix computation of dark bg
+  * icons/meson: Add specific targets to clean rendered icons and symlinks
+  * icons: add back removed devices accented icons
+  * render-bitmaps: Make possible to render a full bitmap
+  * render-bitmaps: Copy the SVG to the final directory if nothing rendered
+  * icons: Add back svg icons removed by rendered job
+  * render-bitmaps.py: Correctly update count of rendered icons
+  * meson/icons: Add cleanup-symlinks-accented target and use it in CI
+  * icons/meson: Do not remove symlinks during rendered icons cleanup
+  * icons/meson: Also cleanup accented svgs on cleanup-rendered-icons-accented
+  * gnome-shell: Use optimized contrast color for link items
+  * gtk, shell: Adjust color for hyperlinks
+  * common: Compute the accent-optimized variant globally
+  * gtk/meson: Include Default path not Adwaita in scss
+  * icons/meson: Do not fail deleting files if none is found
+  * icons: Update symbolic links for performance and powersave icons
+
+  [ Paul Kepinski ]
+  * Fix GDM 44 look
+  * Fix dash separator color
+  * Fix GS44 theme nitpicks
+  * Sync icon theme with upstream
+  * Sync Gtk4 theme with upstream
+  * Gtk4: use lighter $menu_selected_color in dark theme
+  * Fix and optimize GS symbolics
+
+  [ Muqtxdir ]
+  * remove style classes from power-* symbolics
+  * symlink it based on @Jupi007 review
+  * icons: Optimize symbolic icons
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Mon, 27 Mar 2023 21:30:34 +0200
+
+yaru-theme (23.04.1-0ubuntu1) lunar; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * meson: Release 23.04.1
+  * icons: Set env variables and wrapper in meson itself
+  * render-bitmaps: Do not fail on FileExistsError errors
+  * icons/README: Explain better how icons can be rendered
+
+  [ Paul Kepinski ]
+  * Add libreoffice symbolic app icons
+  * Add missing "Yaru change" comment
+  * Add soft light border to libhandy apps
+  * Add text-x-dart mimetype
+  * Adjust LO mimetype icons
+  * Evince: darker view background
+  * Fix accented folders exessive shadow Fixes #3819
+  * Fix MATE gtk4 theme
+  * Fix noaccented panel colors
+  * Fix user-trash icon
+  * GS: calendar text not distinguishable in light style
+  * Quick settings changes spacing when toggling Dark Mode (LP: #1989844)
+  * Add icon for .aup3 Audacity mime type (LP: #1991461)
+  * Reduce Cinnamon controls size
+  * Refresh Libreoffice app icons
+  * Render fullcolor accented icons
+  * Rework list-remove icon
+  * Selection-checked still use old checkmark
+  * Suggested button green only in default variant
+  * Symlink preference-desktop to tweaks-app
+  * Sync Cinnamon theme with upsteam 3278
+  * Sync cinnamon with upstream #3786
+  * Sync Gnome Shell icons with upstream
+  * Sync gnome shell with upstream (GS 44 support)
+  * Sync Gtk4 with upstream
+  * Sync icon theme with upstream
+  * Sync symbolic icons with libadwaita upstream
+  * Sync upstream Adwaita icons foler
+  * Sync yaru with upstream
+  * Timeshift icons overridden with backups icon
+  * Use even checkmark  (gtk3/4, GS, cinnamon)
+
+  [ ubuntujaggers ]
+  * reducing edge highlight on full colour app icons in sizes 16-48px
+
+  [ Hitalo Souza ]
+  * Add vlang mimetype icons
+
+  [ Daniella Mesquita ]
+  * add Blank Mimetype Template.svg to icons/src/fullcolor/
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 17 Mar 2023 01:25:10 +0100
+
+yaru-theme (22.10.3) kinetic; urgency=medium
+
+  * dock: Sync theme with upstream d2d fixes.
+    This includes fixes coming from:
+     - https://github.com/micheleg/dash-to-dock/pull/1826
+     - https://github.com/micheleg/dash-to-dock/pull/1827
+    And more importantly:
+     - Increase apps tooltips margins
+     - Set margin for default app-running dots
+     - Remove upstream defined dash-item-container's children margin
+       (LP: #1966167)
+     - Do not add edge padding to edge elements
+     - Fix definition for dash-separator in shrink mode
+     - Take in account side margin and opposite padding in separators
+     - Explicitly use border radius and spacing from upstream
+     - Simplify dash separator definition based on upstream one
+     - Use unique function to handle padding/margin on internal children
+     - avoid computing the shrunk dash padding multiple times
+     - Use generic style generator for shrink mode too
+     - Move mixins to the top of the file for easier re-usage
+     - Use dock-container-style to define the extended cases too
+     - Support shrink and position-based style for labels
+     - Move dock specific variables to dock namespace
+     - Sync global variable definitions with upstream
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Sat, 24 Sep 2022 11:11:01 +0200
+
+yaru-theme (22.10.2) kinetic; urgency=medium
+
+  [ Muqtadir ]
+  * Add gnome-text-editor icons
+  * symbolic: folder-open
+  * Split gtksourceview/src into gtksourceview and gtksourceview-5:
+  * GS43: minor tweaks to assets
+
+  [ Paul Kepinski ]
+  * Realign edge resize cursors
+  * Change upstream gnome-todo branch
+  * Sync Gnome Shell with upstream
+  * Sync icon theme with upstream
+  * App grid arrow use wrong color
+  * Wrong quick action button color on click
+  * Sync Gnome Shell with upstream
+  * Fix uncentered cursors
+  * Sync Gnome Shell with upstream
+  * Archive Manager and Rhythmbox icon are upstream
+  * Fix wrong dock menu text color on click
+  * Update MS Office icons to 365 look
+  * Icon theme fixed shadow
+  * Fix render-bitmaps.py
+  * Tone down accents from quick settings
+  * Revert Gtk4 theme to vanilla
+
+  [ Marco Trevisan ]
+  * gtk: Optimize accent color definition taking background in account
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 16 Sep 2022 01:00:33 +0200
+
+yaru-theme (22.10.1) kinetic; urgency=medium
+
+  [ Paul Kepinski ]
+  * Sync with Libadwaita symbolics
+  * Fix some upstream branches (master -> main)
+  * Sync gnome-shell with upstream
+  * Fix slider states
+  * Gtk3: fix marks scale
+  * Gtk3: fix invisible check and radio in selected row
+  * Sync Gtk3 with upstream
+  * Add new auth-face-symbolic icon
+  * Sync symbolic icons with upstream
+  * Sync Cinnamon with upstream
+  * Sync icon theme with upstream
+  * Sync GS with upstream
+  * Metacity: add missing dialog window controls in dark theme
+  * Improve reproducibility of generate-index-theme.py
+  * Skip duplicated CI on push/PR
+  * Add kotlin fullcolor icon
+  * Add support of GS 43
+  * Add missing dark-mode-symbolic entry to gnome-shell-icons.gresource.xml
+
+  [ imageck ]
+  * xfwm4: Add maximized_offset
+
+  [ Jeremy Bicha ]
+  * gitattributes: Exclude .github from tarball releases
+
+  [ Marco Trevisan (Treviño) ]
+  * debian/control: Break on gnome-shell versions before 43
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 25 Aug 2022 01:42:10 +0200
+
+yaru-theme (22.04.4) jammy; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * icons: Ensure symlinks are installed as such for all variants
+  * icons: Avoid adding symlink to parent dark variants if not enabled
+  * icons: Cleanup meson file, re-organizing logic
+  * CI: Add CI job that builds debian packages and builds them
+  * build-ci: Compile both default and full options
+  * gtk/index.theme: Follow the standard on index definition.
+    There's not a real standard definition but the latest one is still
+    defined at https://wiki.xfce.org/gnome-theme-package
+  * gtk: Include some X-Yaru parameters on index.theme
+  * accent-colors: Also override $accent_color variable.
+    It's used by libadwaita for now, but could be used more, so let's define
+    it too.
+  * gtk: Include accent color code in the index.theme.
+    It could be used to do easily figure out the color code so that we avoid
+    hard-coding it in places such as g-c-c
+  * meson: Only build default variant of accent colors if default is enabled
+  * CI: Also include mate-dark variant when rendering icons.
+    We don't want to avoid symlinks from being generated
+  * generate-symlinks: Ensure that we don't overwrite already generated symlinks
+    It means we're doing something wrong in our lists, so let's avoid it
+  * generate-symlinks: Fix handling of some arguments
+  * icons: Ensure we don't overwrite already created symlinks
+  * panel: Avoid using symlinks of symlinks as source.
+    This is causing errors as it depends on the symlinks .list files and we
+    don't want so.
+  * icons: Ensure symlinks are not pointing to other symlinks.
+    While this works, it may lead to troubles when a synlink is supposed to
+    be created by upcoming definitions, so let's avoid this
+  * build-ci: Also run on pull requests
+  * build-deb: Add git version to package
+  * debian: Ensure gnome-shell themes symlinks are preserved
+  * debian: Add pre-install script that removes dangling symlinks (LP: #1968405)
+  * icons: Update rendered icons and symlinks
+
+  [ Martin Wimpress ]
+  * icons: Add panel icons for MATE Optimus, Diodon, Caffiene & Variety
+  * icons: Make dropboxstatus-x.svg panel icons a red that is consistent with
+    other "alert" panel icons
+  * icons: Add symlinks for missing gaming input battery levels (LP: #1967854)
+  * icons: Add gaming-input symlink mapping to panel.list (LP: #1967854)
+  * metacity: Define the base button dimensions
+    This is used to determine whether the image needs to be re-scaled when
+    rendering on different DPI densities. (LP: #1967507)
+  * metacity: Add window buttons to dialog window
+  This ensures dialog windows will always have a close window button.
+
+  [ Paul Kepinski ]
+  * GS: fix fg_color of unfocused selected calendar day
+  * GS: fix lock screen switch user button in light theme
+  * GS: fix entries border radius (LP: #1967826)
+  * Sync Gtk popover/menu bg with GS
+  * GS: fix for entries height shift
+  * Fix notifications shadow (revert to upstream look)
+    * Move up notification shadow
+  * Add ubiquity 22x22 size
+  * Nautilus drop image preview border-radius
+  * Nautilus fix selected item
+  * Gtk: remove windowcontrols button background on backdrop (LP: #1967747)
+
+  [ github-actions[bot] ]
+  * New upstream snapshot for Cinnamon
+  * New upstream snapshot for GTK4
+  * New upstream snapshot for GTK4
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 13 Apr 2022 16:55:44 +0200
+
+yaru-theme (22.04.3.1) jammy; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * gtk: Do not use shell scss sources to define accent colors used by icons
+  * github: Generate rendered icons and symlinks automatically
+  * icons: Use more predicibile rendering target names
+  * meson: Render each icon separately to use multi-process rendering
+  * render-bitmaps: Fail in case no SVG is rendered
+  * meson: Allow to render one icon across all the flavours separately
+  * render-bitmaps: Support searching for icons by category
+  * github: Add automated workflow to optimize SVG
+  * github: Do a full icons rebuild if the renderer script changes
+  * icons/generate-symlinks.sh: Ignore empty lines on list file
+  * icons/phosh.list: Remove trailing empty line
+  * CI: Split build workflow in multiple steps
+  * icons: Add tests to try generating symlinks
+  * meson: Use more fs filename modifications functions
+  * Revert "icons: modify meson and deb files (LP: #1965649)
+  * github: Fix Links on generated PRs
+  * meson: Bump dependency to 0.59 as per fs.parent() usage
+  * icons: Install panel icons only if mate or unity are enabled
+  * icons: Ensure symlinks are all generated from symlink script
+  * icons/scalable: Remove icons that are already handled via symlinks
+  * icons: Remove all the links in source dirs, they should be handled via lists
+  * CI: Recreate symlinks removing old ones
+  * CI: Detect changes on all symlinks files
+  * CI: Ensure that no symlinks are used in icon sources
+  * CI: Use inverse logic, we don't want symlinks :)
+  * CI: Cleanup rendered icons before render them again
+  * icons/accented: Remove software store from accented icons
+  * gnome-shell: Use correct syntax for or'ed find
+  * CI: Archive meson logs
+  * generate-index-theme: Support excluding a specific icons directory
+  * icons: Also generate symlinks for 22x22 icons
+  * icons: Generate panel symlinks, and install them only when needed
+  * generate-index-theme: Handle the scalable min/max size cases
+  * generate-index-theme: Use proper context names when not computable
+  * icons: Auto-generate index.theme for default and mate icon themes
+  * generate-index-theme: Support excluding elements by context
+  * generate-index-theme: Support providing custom parameters for a folder
+  * icons: Replicate symlinks in installed folder when using meson >= 0.61
+  * icons: Use nicer way to compute find command for excluded folders
+  * gnome-shell: Use native meson symlink installer when possible
+  * icons, gnome-shell: Use python-computed relative paths
+  * CI: Make meson options more readable in full build
+  * gnome-shell: Add further option to toggle UserThemes support
+  * debian/rules: Enable user themes support in packages
+  * icons: Add more accented icons
+  * icons: Use better name for rendered icon target
+  * gtk, gnome-shell: Only generate Yaru-$accent-dark themes if `dark` is set
+  * icons: Generate dark variants of the icons theme
+  * CI: Also consider untracked changes on rendering/optimizing icons
+  * CI: Use proper syntax to check on rendered icons changes
+  * icons: Install icons symlinks as such also with older meson versions
+  * icons: Inherit dark accented variants from Yaru-dark as primary choice
+  * yaru-colors-defs: Use a map to define colors so we can avoid repetitions
+  * yaru-colors-defs: Ensure we always generate opaque colors
+  * yaru-colors-defs: Use more css-style generated definitions
+  * gnome-shell: Use proper name for generated target output name
+  * gnome-shell: Define custom checkbox bg color and expose bg-color as such
+  * icons/symlinks: avoid using symlinks to symlinks not to confuse generator
+  * icons: Add speaker icons for mate
+  * debian: Include new installed files to proper package
+
+  [ Martin Wimpress ]
+  * metacity: Correct Metacity theme contrast so they match GNOME/CSD windows
+  * gtk: Add MetacityThemeName to index.theme
+  * metacity: Correct titlebar contrast for default and dark themes
+  * mate: Restore MATE icons
+  * icons: Remove Humanity icons languishing in legacy
+  * mate: Drop unnecessary MATE variations of GtkSourceView and Metacity themes
+  * icons: Add ulauncher panel icons
+  * metacity: Add window buttons to modal windows (LP: #1917185)
+  * icons: Add symlinks for fullcolor printer and printers icons
+  * icons: Add symlinks for more MATE apps
+  * icons: Fix preferences-system.png collision and add more MATE symlinks
+  * icons: Add redshift and steam panel icons
+  * icons: Add symlink for preferences-desktop-default-applications.png
+  * gtk: Add gtk-2.0 themes for color accents (LP: #1965659)
+  * icons: Create dark theme subfolders and symlink categories
+  * icons: Add Dropbox, Remmina, Transmission & audacious panel icons
+    (LP: #964518, LP: #1949312)
+
+  [ Lyubomir Popov ]
+  * accent colours: subtler purple, magenta and red
+  * accent colours: adjust hue of the red color
+  * adjust hue of magenta so it corresponds better to the name magenta
+
+  [ Paul Kepinski ]
+  * Fix go-last-symbolic-rtl icon
+  * Mate icon theme add variants
+  * Remove typo in _search-entry
+  * Fix lock screen in light theme (LP: #1965627)
+  * Update Ubuntu logo
+  * Restyle nautilus infobar
+  * Fix process-working misaligned spinner (LP: #1965207)
+  * Sync Gnome Shell with upstream
+  * Remove square background from start-here-symbolic icon
+  * Force border-radius of nautilus-canvas-item in focus state
+  * Revert "Make MATE panel dark
+  * Add panel-dark icons support
+  * Makes Unity7 panel follow bg color
+  * Fix broken panel icons symlinks
+  * Fix invisible caret in caja desktop rename entry
+  * Clean up panel vars
+  * Fix upstream icons CI branch names
+  * Mate: Hide focus outline on menu-bar buttons
+  * GS: darker bg_color and lighter borders_edge (LP: #1965210)
+  * Gtk3: Fix selected image
+
+  [ Muqtadir ]
+  * add symbolic-icons used by gsconnet-extension
+  * minor-tweaks to accented
+  * add devices/ to variants using common
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Mon, 28 Mar 2022 23:58:51 +0200
+
 yaru-theme (22.04.2) jammy; urgency=medium
 
   [ Paul Kepinski ]

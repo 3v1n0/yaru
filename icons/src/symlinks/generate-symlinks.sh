@@ -56,7 +56,7 @@ function print_illegal() {
 }
 
 # Parsing flags and arguments
-while getopts 'hanvmt:' OPT; do
+while getopts 'hanvm:t:' OPT; do
 	case $OPT in
 		h) sed -ne 's/^## \(.*\)/\1/p' $0
 			exit 1 ;;
@@ -80,10 +80,15 @@ function dlog() {
 	[ ! -z $_verbose ] && echo $*
 }
 
+if [ "${BASH_VERSION%%.*}" -lt 4 ]; then
+	echo "Too old bash version ${BASH_VERSION}!";
+	exit 1
+fi
+
 DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 # Icon sizes, contexts and variants
-CONTEXTS=("actions" "apps" "devices" "categories" "mimetypes" "places" "phosh" "status" "emblems" "ui")
+CONTEXTS=("actions" "apps" "devices" "categories" "mimetypes" "places" "phosh" "status" "emblems" "ui", "org.gnome.Nautilus", "time", "org.gnome.Settings")
 OPTIONAL_CONTEXTS=("panel" "animations")
 SIZES=("16x16" "24x24" "32x32" "48x48" "256x256" "16x16@2x" "24x24@2x" "32x32@2x" "48x48@2x" "256x256@2x")
 OPTIONAL_SIZES=("8x8" "8x8@2x" "22x22")
@@ -94,7 +99,7 @@ SIZES+=("${OPTIONAL_SIZES[@]}")
 
 if [ -n "$_variant" ]; then
 	if [[ ! " ${VARIANTS[*]} " =~ " ${_variant} " ]]; then
-		echo "WARNING: Requested $variant is not known"
+		echo "WARNING: Requested $_variant is not known"
 	fi
 
 	VARIANTS=($_variant)
@@ -104,6 +109,7 @@ fi
 linker () {
 	local icon_folder=$1
 	local icon_subfolder=$2
+	declare -A generated_links
 
 	LIST="$DIR/${icon_folder}/$CONTEXT.list"
 	if [ ! -d "$DIR/../../$THEME/$icon_subfolder/$CONTEXT" ]; then
@@ -126,15 +132,31 @@ linker () {
 
 		SOURCE_FILE=${line%% *}
 		if [ -f "$SOURCE_FILE" ]; then
-			echo "[$icon_subfolder/$CONTEXT] linking $line"
-			if [ -z "$_dry_run" ]; then
-				ln -sf $line;
+			line_array=($line)
+			target="${line_array[0]}"
+			link_name="${line_array[1]}"
+			echo "[$icon_subfolder/$CONTEXT] linking $link_name -> $target"
+			if [ -n "${generated_links["$link_name"]}" ]; then
+				echo "  ERROR: $link_name is already linked to ${generated_links["$link_name"]}"
+				exit 1
 			fi
+			if [ "$target" = "$link_name" ]; then
+				echo "  ERROR: Can't link a file with itself!"
+				exit 1
+			fi
+			if [ -L "$target" ]; then
+				echo "  ERROR: $target is already a symlink, please point it to a real file!"
+				exit 1
+			fi
+			if [ -z "$_dry_run" ]; then
+				ln -sf "$target" "$link_name"
+			fi
+			generated_links["$link_name"]="$target"
 		elif [ $VARIANT = "default" ] &&
 			 [[ ! " ${OPTIONAL_SIZES[*]} " =~ " $icon_subfolder " ]] &&
 			 [[ ! " ${OPTIONAL_CONTEXTS[*]} " =~ " $CONTEXT " ]]; then
 			# The default variant must have all icons availables
-			echo "error symlinking \"$line\" for $icon_subfolder/$CONTEXT: could not find symlink file \"$SOURCE_FILE\" in $(pwd)"
+			echo "  ERROR: could not find symlink file \"$SOURCE_FILE\" in $(pwd)"
 			exit 1
 		else
 			# The variants can ignore the missing icons
