@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Yaru code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
@@ -27,10 +27,10 @@ jobs:
       - name: Setup common variables
         id: env
         run: |
-          echo "::set-output name=push-branch::auto-rendered-icons"
+          echo "push-branch=auto-rendered-icons" >> $GITHUB_OUTPUT
 
       - name: Check Source changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: check-changed
         with:
           base: ${{ steps.env.outputs.push-branch }}
@@ -48,19 +48,36 @@ jobs:
             symlinks:
               - icons/src/symlinks/**
 
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install dependencies
         if: ${{ steps.check-changed.outputs.changes != '[]' }}
         run: |
           sudo apt install software-properties-common
           sudo add-apt-repository ppa:inkscape.dev/stable
           sudo apt update
-          sudo apt install sassc python3-pip xvfb inkscape optipng scour
+          sudo apt install \
+            inkscape \
+            libglib2.0-dev-bin \
+            optipng \
+            python3-pip \
+            sassc \
+            scour \
+            xvfb \
+            yaru-theme-icon
           sudo pip3 install meson ninja
 
       - name: Configure project
         if: ${{ steps.check-changed.outputs.changes != '[]' }}
         run: |
-          meson _build -Dmate=true -Dmate-dark=true
+          meson setup _build \
+            -Dmate=true \
+            -Dmate-dark=true \
+            -Dgnome-shell=false \
+            -Dgtk=true \
+            -Dgtksourceview=false \
+            -Dsessions=false \
+            -Dsounds=false \
+            -Daccent-colors="bark, sage, olive, viridian, prussiangreen, blue, purple, magenta, red, yellow, wartybrown"
 
       - name: Render default icons and generate symlinks
         if: steps.check-changed.outputs.default == 'true'
@@ -101,11 +118,11 @@ jobs:
           else
             changed=true
           fi
-          echo "::set-output name=changed::${changed}"
+          echo "changed=${changed}" >> $GITHUB_OUTPUT
 
       - name: Create or update Pull Request
         if: steps.check-rendering.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "icons: Update rendered icons and symlinks"
           title: Auto rendered icons updates

@@ -6,29 +6,22 @@ styles = [
   'gnome-shell-high-contrast',
 ]
 
+DEFAULT_GDM_VARIANT = get_option('gdm-default-variant')
+DEFAULT_HIGH_CONTRAST_VARIANT = get_option('gnome-shell-default-high-contrast-variant')
+
 variants = [
   'light',
   'dark',
 ]
 
-DEFAULT_VARIANT = get_option('gnome-shell-default-variant')
-DEFAULT_GDM_VARIANT = get_option('gdm-default-variant')
-DEFAULT_HIGH_CONTRAST_VARIANT = get_option('gnome-shell-default-high-contrast-variant')
-INCLUDE_HIGH_CONTRAST_VARIANTS = false
-
-foreach accent: enabled_accent_colors
-  if enabled_accent_colors.contains(accent)
-    variants += (get_option('default') ? [accent] : [])
-    variants += (get_option('dark') ? [ accent + '-dark' ] : [])
-  endif
-endforeach
-
-if not variants.contains(DEFAULT_VARIANT)
-  error('Invalid gnome-shell default variant selected')
+if not variants.contains(DEFAULT_GDM_VARIANT)
+  error('Invalid default gdm variant selected: @0@'.format(
+    DEFAULT_GDM_VARIANT))
 endif
 
-if not variants.contains(DEFAULT_GDM_VARIANT)
-  error('Invalid default gdm variant selected')
+if not variants.contains(DEFAULT_HIGH_CONTRAST_VARIANT)
+  error('Invalid gnome-shell default high-contrast variant selected: @0@'.format(
+    DEFAULT_HIGH_CONTRAST_VARIANT))
 endif
 
 theme_css = []
@@ -49,18 +42,6 @@ theme_assets = files(
     ')',
   ).stdout().strip().split('\n')
 )
-
-colorable_theme_assets = files(
-  run_command(
-    'find', meson.current_source_dir() / 'colorable-assets', '-maxdepth', '1', '-name', '*.svg'
-  ).stdout().strip().split('\n')
-)
-
-colorable_assets_names = []
-foreach asset: colorable_theme_assets
-  basename = fs.name(asset)
-  colorable_assets_names += basename
-endforeach
 
 theme_gresource_files = theme_assets
 theme_gresource_deps = []
@@ -94,72 +75,12 @@ icons_gresource_xml = files('data/gnome-shell-icons.gresource.xml')[0]
 
 foreach variant: variants
   is_dark = variant == 'dark' or variant.endswith('-dark')
-  is_variant = variant != DEFAULT_VARIANT
-  variant_base_name = is_dark ? variant.split('-dark')[0] : variant
+  is_variant = is_dark
   variant_suffix = is_variant ? '-@0@'.format(variant)  : ''
   theme_full_name = meson.project_name() + variant_suffix
-  is_custom_accent = enabled_accent_colors.contains(variant_base_name)
 
   install_theme_sources = not gnomeshell_user_themes_suport.disabled()
   install_dir = gnomeshell_theme_dir + variant_suffix
-
-  accent_configuration = {
-    'yaru_dark_variant': is_dark ? 'true' : 'false',
-    'yaru_accent_color': is_custom_accent ? variant_base_name : 'default',
-  }
-
-  # Prepare colorable assets
-  shell_yaru_colors_defs_scss = configure_file(
-    configuration: accent_configuration + {
-      'yaru_theme_entry_point': yaru_colors_defs_scss
-    },
-    input: accent_colors_definitions_scss,
-    output: 'gnome-shell-yaru-colors-defs-@0@.scss'.format(variant),
-  )
-
-  shell_yaru_colors_defs = custom_target(
-    'gnome-shell-yaru-color-definitions-@0@'.format(variant),
-    input: shell_yaru_colors_defs_scss,
-    output: '@BASENAME@.css'.format(variant),
-    command: [
-      sassc, '-a', '@INPUT@', '@OUTPUT@',
-      '-I', css_sources_path / 'gnome-shell-sass',
-      '-I', meson.project_source_root() / 'common',
-    ],
-    depends: source_deps,
-    depend_files: [
-      yaru_colors_defs_scss,
-      theme_sources,
-    ]
-  )
-
-  foreach colorable_asset: colorable_theme_assets
-    basename = fs.name(colorable_asset)
-
-    # We don't support other variants here...
-    if (not INCLUDE_HIGH_CONTRAST_VARIANTS and
-        variant != DEFAULT_HIGH_CONTRAST_VARIANT and basename.endswith('-hc.svg'))
-      continue
-    endif
-
-    asset_target = custom_target(
-      fs.stem(basename) + '-' + variant + '.svg',
-      input: colorable_asset,
-      output: '@BASENAME@-@0@.svg'.format(variant),
-      command: [
-        colorize_dummy_svg,
-        shell_yaru_colors_defs,
-        '--input-file', '@INPUT@',
-        '--output-folder', '@OUTDIR@',
-        '--variant', variant,
-      ],
-      depends: shell_yaru_colors_defs,
-      install: install_theme_sources,
-      install_dir: install_dir,
-    )
-    theme_gresource_files += asset_target.full_path()
-    theme_gresource_deps += asset_target
-  endforeach
 
   # generate .css files
   style_css = []
@@ -173,7 +94,7 @@ foreach variant: variants
     if high_contrast
       if variant == DEFAULT_HIGH_CONTRAST_VARIANT
         stylename = style
-      elif not INCLUDE_HIGH_CONTRAST_VARIANTS
+      else
         continue
       endif
     endif
@@ -185,26 +106,13 @@ foreach variant: variants
       input: 'gnome-shell.scss.in',
       output: '@0@.scss'.format(stylename),
       configuration: {
-        'DarkVariant': is_dark ? 'true' : 'false',
+        'Variant': variant,
         'YaruVariant': variant,
         'UseGResource': gnomeshell_use_gresource ? 'true' : 'false',
-        'HighContrast': high_contrast ? 'true' : 'false',
+        'Contrast': high_contrast ? 'high' : 'normal',
         'Colors': (high_contrast ? 'high-contrast-' : '') + 'colors',
-        'ColorableAssets': '@0@'.format(colorable_assets_names),
       },
     )
-
-    if is_custom_accent and (variant == DEFAULT_HIGH_CONTRAST_VARIANT or
-      INCLUDE_HIGH_CONTRAST_VARIANTS)
-      theme_sources += theme_main_file
-      theme_main_file = configure_file(
-        configuration: accent_configuration + {
-          'yaru_theme_entry_point': meson.project_build_root() / '@0@'.format(theme_main_file),
-        },
-        input: accent_colors_definitions_scss,
-        output: '@0@-accent-colors.scss'.format(stylename),
-      )
-    endif
 
     style_css += custom_target(
       'style-@0@'.format(stylename),
@@ -270,6 +178,7 @@ if gnomeshell_use_gresource
 
   foreach gfile: theme_gresource_files
     filepath = '@0@'.format(gfile)
+    preprocess = ''
     alias = filepath[0] == '/' ? '@0@'.format(gfile).split('/')[-1] : filepath
     if alias == 'gnome-shell@0@.css'.format(DEFAULT_GDM_VARIANT != '' ? '-' + DEFAULT_GDM_VARIANT : '')
       # Use Yaru files for ubuntu's special gdm
@@ -281,7 +190,11 @@ if gnomeshell_use_gresource
       alias = 'Yaru' / alias
     endif
 
-    theme_gresource_files_xml += '<file alias="@0@">@1@</file>'.format(alias, gfile)
+    if alias.endswith('.svg')
+      preprocess = 'xml-stripblanks'
+    endif
+
+    theme_gresource_files_xml += '<file preprocess="@2@" alias="@0@">@1@</file>'.format(alias, gfile, preprocess)
   endforeach
 
   gnome.compile_resources(
