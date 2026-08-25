@@ -1,6 +1,7 @@
 name: Open/Update PR when symbolic icons needs to be optimized
 on:
   push:
+    branches: [master]
     paths:
       - '.github/workflows/open-pr-on-optimized-symbolic-icons-changes.yaml'
       - 'icons/src/scalable/**'
@@ -17,19 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Yaru code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup common variables
         id: env
         run: |
-          echo "::set-output name=push-branch::auto-optimized-symbolic-icons"
+          echo "push-branch=auto-optimized-symbolic-icons" >> $GITHUB_OUTPUT
 
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install dependencies
         run: |
+          sudo apt update
           sudo apt install scour
 
       - name: Check Source changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v4
         id: check-changed
         with:
           base: ${{ steps.env.outputs.push-branch }}
@@ -61,11 +64,11 @@ jobs:
           else
             changed=true
           fi
-          echo "::set-output name=modified::${changed}"
+          echo "modified=${changed}" >> $GITHUB_OUTPUT
 
       - name: Create or update Pull Request
         if: steps.check_optimization_changes.outputs.modified == 'true'
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "icons: Optimize symbolic icons"
           title: Auto optimized symbolic icons updates

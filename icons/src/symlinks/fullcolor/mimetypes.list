@@ -39,6 +39,7 @@ application-x-model.png model.png
 application-x-ms-dos-executable.png application-vnd.microsoft.portable-executable.png
 application-x-ms-dos-executable.png application-x-msi.png
 application-x-php.png gnome-mime-application-x-php.package-x-generic
+application-x-php.png text-x-php.png
 application-x-rar.png application-rar.png
 application-x-rar.png application-vnd.rar.png
 application-x-rar.png gnome-mime-application-x-rar.png
@@ -48,6 +49,7 @@ application-x-subrip.png text-x-microdvd.png
 application-x-zip.png application-archive-zip.png
 application-x-zip.png application-zip.png
 application-x-zip.png zip.png
+application-yaml.png application-x-yaml.png
 audio-x-flac.png audio-flac.png
 audio-x-flac.png audio-x-flac+ogg.png
 audio-x-mpeg.png audio-mpeg.png

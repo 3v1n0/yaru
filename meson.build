@@ -1,8 +1,9 @@
 project('Yaru',
-        version: '23.10.0',
-        meson_version: '>= 0.59',
-        license : ['GPL3', 'CC BY-SA 4.0'],
-        default_options: ['prefix=/usr'])
+  version: '26.10.1',
+  meson_version: '>= 1.4.0',
+  license: ['GPL3', 'CC BY-SA 4.0'],
+  default_options: {'prefix': '/usr'},
+)
 
 fs = import('fs')
 gnome = import('gnome')
@@ -10,6 +11,7 @@ gnome = import('gnome')
 python = find_program('python3')
 sassc = find_program('sassc')
 
+enabled_accent_colors = get_option('accent-colors')
 subdir('common')
 
 components = [
@@ -25,15 +27,14 @@ components = [
   'cinnamon-shell',
 ]
 
-enabled_accent_colors = get_option('accent-colors')
-
 foreach component: components
   if not get_option(component)
-    message('skip component ' + component)
+    message('skip component @0@'.format(component))
     continue
   endif
 
-  message('build component ' + component)
+  message('build component @0@'.format(component))
   subdir(component)
-
 endforeach
+
+gnome.post_install(glib_compile_schemas: true)

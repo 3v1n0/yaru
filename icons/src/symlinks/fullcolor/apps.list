@@ -11,6 +11,7 @@ address-book-app.png x-office-address-book.png
 screenshot-app.png org.gnome.Screenshot.png
 backups-app.png deja-dup.png
 backups-app.png org.gnome.DejaDup.png
+builder-app.png org.gnome.Builder.png
 disk-usage-app.png org.gnome.baobab.png
 calculator-app.png accessories-calculator.png
 calculator-app.png gnome-calculator.png
@@ -41,6 +42,7 @@ evince.png org.gnome.Evince.png
 error-app.png apport.png
 extensions.png org.gnome.Extensions.png
 extensions.png org.gnome.Shell.Extensions.png
+extensions.png com.mattjakeman.ExtensionManager.png
 filemanager-app.png file-manager.png
 filemanager-app.png system-file-manager.png
 filemanager-app.png nautilus.png
@@ -67,6 +69,14 @@ image-viewer-app.png org.gnome.eog.png
 image-viewer-app.png multimedia-photo-viewer.png
 jockey.png cpu-x.png
 libreoffice-main.png libreoffice-startcenter.png
+libreoffice-writer.png org.libreoffice.LibreOffice.writer.png
+libreoffice-base.png org.libreoffice.LibreOffice.base.png
+libreoffice-calc.png org.libreoffice.LibreOffice.calc.png
+libreoffice-draw.png org.libreoffice.LibreOffice.draw.png
+libreoffice-impress.png org.libreoffice.LibreOffice.impress.png
+libreoffice-main.png org.libreoffice.LibreOffice.main.png
+libreoffice-main.png org.libreoffice.LibreOffice.startcenter.png
+libreoffice-math.png org.libreoffice.LibreOffice.math.png
 log-viewer-app.png gnome-logs.png
 log-viewer-app.png logviewer.png
 log-viewer-app.png mate-system-log.png
@@ -91,6 +101,7 @@ notes-app.png bijiben.png
 org.gnome.SoundRecorder.png audio-recorder.png
 packages-app.png gnome-mime-application-x-deb.png
 packages-app.png system-software-install.png
+papers.png org.gnome.Papers.png
 passwords-app.png seahorse.png
 passwords-app.png org.gnome.seahorse.Application.png
 power-statistics.png mate-power-statistics.png
@@ -124,6 +135,7 @@ terminal-app.png gnome-terminal.png
 terminal-app.png terminal.png
 terminal-app.png utilities-terminal.png
 terminal-app.png org.gnome.Terminal.png
+terminal-app2.png org.gnome.Ptyxis.png
 to-do-app.png org.gnome.Todo.png
 to-do-app.png org.gnome.Software.Work.png
 to-do-app.png user-bookmarks.png

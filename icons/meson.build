@@ -1,24 +1,16 @@
 PANEL_ONLY_ICONS_CATEGORIES = [
   'animations',
+  'legacy',
   'panel',
 ]
 
-icon_flavors = [
-  'default',
-  'dark',
-  'mate',
-  'mate-dark',
-]
-
-foreach accent: enabled_accent_colors
-  icon_flavors += (get_option('default') ? [accent] : [])
-  icon_flavors += (get_option('dark') ? [ accent + '-dark' ] : [])
-endforeach
+icon_flavors = yaru_flavours
 
 fullcolor_path = 'src' / 'fullcolor'
 xvfb_run = find_program('xvfb-run', required: false)
 dbus_run_session = find_program('dbus-run-session', required: false)
 inkscape = find_program('inkscape', required: false)
+gtk_update_icon_cache = find_program('gtk-update-icon-cache', required: false)
 render_bitmaps = find_program(fullcolor_path / 'render-bitmaps.py', required: true)
 generate_symlinks = find_program('src' / 'symlinks' / 'generate-symlinks.sh', required: true)
 generate_index_theme = find_program('src' / 'generate-index-theme.py', required: true)
@@ -38,6 +30,18 @@ cleanup_rendered_icons_accented_targets = []
 cleanup_symlinks_targets = []
 cleanup_symlinks_accented_targets = []
 
+# FIXME: Remove this when we can make yaru-theme-unity depend on
+# yaru-theme-icons, for now let's just duplicate them.
+duplicate_legacy_icons = uses_panel_icons and run_command(
+  'sh', '-eu', '-c', '[ -n "${DEB_HOST_ARCH}" ]',
+  check: false,
+).returncode() == 0
+
+svg_source_categories_excludes = ''
+foreach c: PANEL_ONLY_ICONS_CATEGORIES
+  svg_source_categories_excludes += ' ! -path "*/@0@/*"'.format(c)
+endforeach
+
 if not inkscape.found()
   warning('Inkscape not found, bitmap rendering not supported')
 endif
@@ -45,7 +49,47 @@ endif
 render_wrappers = xvfb_run.found() ? [xvfb_run, '-a', '--'] : []
 render_wrappers += dbus_run_session.found() ? [dbus_run_session, '--'] : []
 
+accented_full_svgs = []
+accented_full_relnames = []
+accented_full_svgs_path = fullcolor_path / 'accented-full'
+if icon_flavors.length() > 0 and fs.is_dir(accented_full_svgs_path)
+  accented_full_svgs = files(
+    run_command(
+      'find',
+      meson.current_source_dir() / accented_full_svgs_path,
+      '-name', '*.svg',
+      check: true,
+    ).stdout().strip().split('\n')
+  )
+  foreach svg: accented_full_svgs
+    accented_full_relnames += fs.name(fs.parent(svg)) / fs.name(svg)
+  endforeach
+endif
+
+all_accented_svgs = accented_full_svgs
+all_accented_relnames = accented_full_relnames
+accented_svgs_path = fullcolor_path / 'accented'
+if icon_flavors.length() > 0 and fs.is_dir(accented_svgs_path)
+  foreach svg: files(
+    run_command(
+      'find',
+      meson.current_source_dir() / accented_svgs_path,
+      '-name', '*.svg',
+      check: true,
+    ).stdout().strip().split('\n')
+  )
+    relname = fs.name(fs.parent(svg)) / fs.name(svg)
+    if relname in accented_full_relnames
+      error('Icon @0@ exists in both accented and accented-full, accented one is ignored'.format(
+        relname))
+    endif
+    all_accented_svgs += svg
+    all_accented_relnames += relname
+  endforeach
+endif
+
 foreach flavour: icon_flavors
+  message('Icons: Configuring flavour ' + flavour)
   is_dark = flavour == 'dark'
   is_dark_flavour = not is_dark and flavour.endswith('-dark')
   is_accent = enabled_accent_colors.contains(flavour)
@@ -62,51 +106,84 @@ foreach flavour: icon_flavors
     suffix = is_flavour ? '-@0@'.format(flavour) : ''
     icon_dir = 'Yaru' + suffix
     theme_name = meson.project_name() + suffix
-    theme_install_dir = join_paths(get_option('prefix'), 'share/icons', theme_name)
+    theme_install_dir = get_option('datadir') / 'icons' / theme_name
 
     rendering_deps = []
     rendering_args = [
       '--variant', flavour,
       '--dest-path', meson.current_source_dir(),
     ]
+    rendering_source_path_args = []
 
     source_svgs = []
-    fullcolor_svgs_path = fullcolor_path / (is_accent ? 'accented' : flavour)
+    specific_svg_count = 0
 
-    if fs.is_dir(fullcolor_svgs_path)
-      source_svgs += files(
-        run_command(
-          'find',
-          meson.current_source_dir() / fullcolor_svgs_path,
-          '-name', '*.svg',
-        ).stdout().strip().split('\n')
-      )
+    accented_svgs    = (is_dark or is_dark_flavour) ? accented_full_svgs : all_accented_svgs
+    accented_relnames = (is_dark or is_dark_flavour) ? accented_full_relnames : all_accented_relnames
+
+    # For non-accent flavours: include all flavour-specific SVGs not covered
+    # by an accented counterpart.
+    if not is_accent
+      flavour_svgs_path = fullcolor_path / flavour
+      if fs.is_dir(flavour_svgs_path)
+        foreach svg: files(
+          run_command(
+            'find',
+            meson.current_source_dir() / flavour_svgs_path,
+            '-name', '*.svg',
+            check: true,
+          ).stdout().strip().split('\n')
+        )
+          if fs.name(fs.parent(svg)) / fs.name(svg) not in accented_relnames
+            source_svgs += svg
+          endif
+        endforeach
+      endif
     endif
 
-    if is_accent
+    # For each accented SVG: if the flavour has a specific override use it
+    # directly; otherwise collect it for colorization and rendering.
+    foreach svg: accented_svgs
+      category = fs.name(fs.parent(svg))
+      flavour_override = fullcolor_path / flavour / category / fs.name(svg)
+      if not is_accent and fs.is_file(flavour_override)
+        source_svgs += files(flavour_override)
+      endif
+    endforeach
+
+    specific_svg_count = source_svgs.length()
+
+    # Colorize every accented SVG that has no flavour-specific override.
+    if accented_svgs.length() > 0
       colors_definitions = gtk_yaru_colors_defs['@0@-gtk-@1@'.format(
         icon_dir, accent_color_gtk_version_reference)]
 
-      foreach accent_svg: source_svgs
-        category = fs.name(fs.parent(accent_svg))
-        accented_svg = custom_target(
-          '-'.join([icon_dir, fs.name(accent_svg)]),
-          input: accent_svg,
-          output: '@BASENAME@-@0@.svg'.format(flavour),
-          command: [
-            colorize_dummy_svg,
-            colors_definitions,
-            '--input-file', '@INPUT@',
-            '--output-folder', '@OUTDIR@' / flavour / category,
-          ],
-          depends: colors_definitions,
-        )
-        rendering_deps += accented_svg
+      foreach svg: accented_svgs
+        category = fs.name(fs.parent(svg))
+        flavour_override = fullcolor_path / flavour / category / fs.name(svg)
+        if is_accent or not fs.is_file(flavour_override)
+          accented_svg = custom_target(
+            '-'.join([icon_dir, fs.name(svg)]),
+            input: svg,
+            output: '@BASENAME@-@0@.svg'.format(flavour),
+            command: [
+              colorize_dummy_svg,
+              colors_definitions,
+              '--input-file', '@INPUT@',
+              '--output-folder', '@OUTDIR@' / flavour / category,
+            ],
+            depends: colors_definitions,
+          )
+          rendering_deps += accented_svg
+          source_svgs += svg
+        endif
       endforeach
 
-      rendering_args += [
-        '--source-path', meson.current_build_dir(),
-      ]
+      if rendering_deps.length() > 0
+        rendering_source_path_args = [
+          '--source-path', meson.current_build_dir(),
+        ]
+      endif
     endif
 
     render_flavour_targets = []
@@ -114,6 +191,7 @@ foreach flavour: icon_flavors
       svg = source_svgs[i]
       basename = fs.stem(fs.name(svg))
       category = fs.name(fs.parent(svg))
+      is_specific_svg = i < specific_svg_count
       render_bitmap_target = custom_target(
         'render-icon-' + '-'.join([category, basename, flavour]),
         input: svg,
@@ -125,10 +203,11 @@ foreach flavour: icon_flavors
           render_wrappers,
           render_bitmaps,
           rendering_args,
+          is_specific_svg ? [] : rendering_source_path_args,
           '--categories', category,
           basename,
         ],
-        depends: is_accent ? rendering_deps[i] : [],
+        depends: is_specific_svg ? [] : rendering_deps[i - specific_svg_count],
       )
       render_flavour_targets += render_bitmap_target
       render_targets += render_bitmap_target
@@ -141,6 +220,7 @@ foreach flavour: icon_flavors
     render_bitmaps_command = [
       render_bitmaps,
       rendering_args,
+      rendering_source_path_args,
     ]
     render_bitmaps_target = custom_target(icon_dir + '-render',
       output: icon_dir + '-render',
@@ -166,11 +246,13 @@ foreach flavour: icon_flavors
 
     cleanup_rendered_flavour = run_target('cleanup-rendered-' + flavour,
       command: [
-        'bash', '-c',
+        'bash', '-xc',
           ';'.join([
-            '[ ! -e "$0"/$1 ] && exit 0',
+            'ls -d "$0"/$1 >/dev/null 2>&1 || exit 0',
             'find "$0"/$1 -name "*.png" -print -delete',
-            is_accent ? 'find "$0"/$1 -name "*.svg" -print -delete' : 'true',
+            (rendering_deps.length() > 0 ?
+            'find "$0"/$1 -name "*.svg" @0@ -print -delete'.format(svg_source_categories_excludes) :
+            'true'),
             'find "$0"/$1 -type d -empty -print -delete'
           ]),
         meson.project_source_root() / meson.current_source_dir() / icon_dir,
@@ -181,9 +263,9 @@ foreach flavour: icon_flavors
 
     cleanup_symlinks_flavour = run_target('cleanup-symlinks-' + flavour,
       command: [
-        'bash', '-c',
+        'bash', '-xc',
           ';'.join([
-            '[ ! -e "$0"/$1 ] && exit 0',
+            'ls -d "$0"/$1 >/dev/null 2>&1 || exit 0',
             'find "$0"/$1 -type l -print -delete',
             'find "$0"/$1 -type d -empty -print -delete',
           ]),
@@ -199,13 +281,13 @@ foreach flavour: icon_flavors
       alias_target('cleanup-rendered-icons-' + flavour, cleanup_rendered_flavour)
     endif
 
-    if is_accent
+    if is_accent or rendering_deps.length() > 0
       render_accented_targets += render_flavour_targets
       render_and_symlink_accented_targets += render_and_symlink_flavour
       cleanup_rendered_icons_accented_targets += cleanup_rendered_flavour
       cleanup_symlinks_accented_targets += cleanup_symlinks_flavour
 
-      if not fs.is_dir(icon_dir)
+      if is_accent and not fs.is_dir(icon_dir)
         warning('@0@ does not exists, ensure you generated it with `ninja -C @1@ render-icons-@2@,`'.format(
           icon_dir, meson.project_build_root(), flavour))
         continue
@@ -234,6 +316,7 @@ foreach flavour: icon_flavors
         '-type', 'd',
         included_names.length() > 0 ? ['('] + included_names + [')'] : [],
         '-printf', '%P\\n',
+        check: false,
       ).stdout().strip().split('\n')
 
       if excluded_folders.length() == 1 and excluded_folders[0] == ''
@@ -241,103 +324,15 @@ foreach flavour: icon_flavors
       endif
     endif
 
-    symlinks = []
-    if fs.is_dir(icon_dir)
-      message('Looking for symlinks in ' + icon_dir)
-
-      find_args = []
-      foreach f: excluded_folders
-        find_args += ['(', '-not', '-path', icon_dir / f / '*', '-prune', ')' ]
-      endforeach
-
-      local_links = run_command(
-        'find',
-        icon_dir,
-        '-type', 'l',
-        find_args,
-        check: true,
-      ).stdout().strip().split('\n')
-
-      if local_links.length() == 1 and local_links[0] == ''
-        local_links = []
-      endif
-
-      if local_links.length() > 0
-        relative_to = meson.current_source_dir() / icon_dir
-        links_paths_getter = run_command(
-          'realpath', '-e',
-          '--relative-to=' + relative_to,
-          local_links,
-          check: false,
-        )
-
-        if links_paths_getter.returncode() != 0
-          failed_links = []
-          foreach link: local_links
-            if run_command(
-              'realpath', '-e',
-              '--relative-to=' + relative_to,
-              link,
-              check: false,
-            ).returncode() != 0
-              failed_links += link
-            endif
-          endforeach
-
-          error ('Symbolic links are pointing to invalid paths:\n  ' +
-            '\n  '.join(failed_links))
-        endif
-
-        links_targets = links_paths_getter.stdout().strip().split('\n')
-        assert(local_links.length() == links_targets.length())
-      endif
-
-      foreach i: range(local_links.length())
-        link_paths = local_links[i].split('/')
-        link_subdirs = []
-        foreach j: range(link_paths.length() - 1)
-          link_subdirs += link_paths[j+1]
-        endforeach
-        sub_link = '/'.join(link_subdirs)
-        symlinks += sub_link
-      endforeach
-
-      excluded_files += symlinks
-    endif
-
+    # FIXME: Meson does not fail if the directory does not exist!
+    assert(fs.is_dir(icon_dir))
     install_subdir(icon_dir,
       install_dir: theme_install_dir,
       strip_directory: true,
       exclude_files: excluded_files,
       exclude_directories: excluded_folders,
+      follow_symlinks: false,
     )
-
-    foreach i: range(symlinks.length())
-      link_path = fs.parent(symlinks[i])
-      symlink_dir = theme_install_dir / link_path
-      target = links_targets[i]
-
-      if link_path == fs.parent(target)
-        target = fs.name(target)
-      else
-        target = run_command(python, '-c',
-          'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))',
-          target,
-          link_path
-        ).stdout().strip()
-      endif
-
-      if meson.version().version_compare('>= 0.61')
-        install_symlink(fs.name(symlinks[i]),
-          install_dir: symlink_dir,
-          pointing_to: target,
-        )
-      else
-        meson.add_install_script('bash', '-c',
-          'mkdir -p "${DESTDIR}/@1@" && ln -svf @2@ ${DESTDIR}/@1@/@0@'.format(
-            fs.name(symlinks[i]), symlink_dir, target))
-      endif
-    endforeach
 
     if is_dark_flavour
       assert(get_option('dark'), 'Dark flavour @0@ enabled, but we have no dark parent'.format(flavour))
@@ -352,6 +347,7 @@ foreach flavour: icon_flavors
         '-mindepth', '2',
         '-maxdepth', '2',
         '-printf', '%P\\n',
+        check: true,
       ).stdout().strip()
       dark_categories = dark_categories != '' ? dark_categories.split('\n') : []
 
@@ -368,27 +364,22 @@ foreach flavour: icon_flavors
         target = run_command(python, '-c',
           'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))',
           dark_theme / c,
-          icon_dir / fs.parent(c)
+          icon_dir / fs.parent(c),
+          check: true,
         ).stdout().strip()
 
-        if meson.version().version_compare('>= 0.61')
-          install_symlink(category,
-            install_dir: theme_install_dir / fs.parent(c),
-            pointing_to: target,
-          )
-        else
-          meson.add_install_script('bash', '-c',
-            'mkdir -p "${DESTDIR}/@2@"; ln -svf @1@ ${DESTDIR}/@2@/@0@'.format(
-                category, target, theme_install_dir / fs.parent(c)))
-        endif
+        install_symlink(category,
+          install_dir: theme_install_dir / fs.parent(c),
+          pointing_to: target,
+        )
       endforeach
     endif
 
     # install cursor thumbnail (cinnamon only)
     if get_option('cinnamon-shell') and flavour == 'default'
       install_data(
-        join_paths('src', 'cursors', 'thumbnail.png'),
-        install_dir: join_paths(theme_install_dir, 'cursors')
+        'src' / 'cursors' / 'thumbnail.png',
+        install_dir: theme_install_dir / 'cursors',
       )
     endif
 
@@ -448,9 +439,26 @@ foreach flavour: icon_flavors
     endif
 
     # Cleanup empty directories, as per excluded files
-    meson.add_install_script('bash', '-c',
-      'find "${DESTDIR}/@0@" -type d -empty -print -delete'.format(theme_install_dir))
-    meson.add_install_script('meson/post_install.py', theme_name)
+    meson.add_install_script('sh', '-euxc',
+      'find "${MESON_INSTALL_DESTDIR_PREFIX}/@0@" -type d -empty -print -delete'.format(theme_install_dir))
+    meson.add_install_script(
+      'meson/dedup-icons.py', theme_name,
+      '--deprioritize-categories',
+      PANEL_ONLY_ICONS_CATEGORIES + ['categories'],
+      duplicate_legacy_icons ? ['--skip-categories'] + PANEL_ONLY_ICONS_CATEGORIES : [],
+    )
+    meson.add_install_script('bash', '-euxc',
+      '[ -z "$(find "${MESON_INSTALL_DESTDIR_PREFIX}/@0@" -xtype l)" ]'.format(theme_install_dir))
+
+    if gtk_update_icon_cache.found()
+      meson.add_install_script(
+        'bash', '-c',
+        '"@0@" -qtf "${MESON_INSTALL_PREFIX}/@1@"'.format(
+          gtk_update_icon_cache.full_path(),
+          get_option('datadir') / 'icons' / theme_name),
+        skip_if_destdir: true,
+      )
+    endif
 
     test('generate-symlinks' + suffix,
       generate_symlinks,

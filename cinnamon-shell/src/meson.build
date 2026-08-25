@@ -1,22 +1,9 @@
-cinnamonshell_theme_dir = join_paths(cinnamonshell_default_theme_dir,
-  meson.project_name())
+cinnamonshell_theme_dir = cinnamonshell_default_theme_dir / meson.project_name()
 
 message()
 
-variants = [
-  'light',
-  'dark',
-]
-
 DEFAULT_VARIANT = 'light'
 message(meson.project_build_root())
-
-foreach accent: enabled_accent_colors
-  if enabled_accent_colors.contains(accent)
-    variants += (get_option('default') ? [accent] : [])
-    variants += (get_option('dark') ? [ accent + '-dark' ] : [])
-  endif
-endforeach
 
 theme_css = []
 theme_sources = files(
@@ -81,7 +68,11 @@ endforeach
 # theme_gresource_xml = files('data/cinnamon-shell-theme.gresource.xml')[0]
 # icons_gresource_xml = files('data/cinnamon-shell-icons.gresource.xml')[0]
 
-foreach variant: variants
+foreach variant: yaru_flavours
+  if variant == 'default'
+    variant = DEFAULT_VARIANT
+  endif
+
   is_dark = variant == 'dark' or variant.endswith('-dark')
   is_variant = variant != DEFAULT_VARIANT
   variant_base_name = is_dark ? variant.split('-dark')[0] : variant
@@ -180,8 +171,8 @@ foreach variant: variants
   if is_variant
     assert(output_styles.length() == variant_styles.length(), 'Output styles length mismatch')
     foreach i: range(output_styles.length())
-      meson.add_install_script('bash', '-c',
-        'mv -uv ${DESTDIR}${MESON_INSTALL_PREFIX}/@0@ ${DESTDIR}${MESON_INSTALL_PREFIX}/@1@'.format(
+      meson.add_install_script('bash', '-euxc',
+        'mv -uv ${MESON_INSTALL_DESTDIR_PREFIX}/@0@ ${MESON_INSTALL_DESTDIR_PREFIX}/@1@'.format(
           install_dir / variant_styles[i], install_dir / output_styles[i]))
     endforeach
   endif
@@ -189,7 +180,7 @@ foreach variant: variants
   # install common assets
   foreach common_asset: common_theme_assets
     asset_dir = '@0@'.format(common_asset).replace(common_asset_dir, '').replace(fs.name(common_asset), '')
-    basename = join_paths(asset_dir, fs.name(common_asset))
+    basename = asset_dir / fs.name(common_asset)
     
     install_data(common_asset, install_dir: install_dir+'/common-assets'+asset_dir)
   endforeach
@@ -208,7 +199,7 @@ foreach variant: variants
         asset_rel_dir = '/light-assets'+asset_rel_dir
       endif
     endif
-    basename = join_paths(asset_rel_dir, fs.name(colorable_asset))
+    basename = asset_rel_dir / fs.name(colorable_asset)
     target_name = fs.stem(basename) + '-' + variant + '.svg'
 
     asset_target = custom_target(

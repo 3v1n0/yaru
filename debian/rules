@@ -2,7 +2,10 @@
 #export DH_VERBOSE = 1
 
 %:
-	dh $@ --buildsystem=meson --with migrations
+	dh $@
+
+execute_after_dh_link:
+	debian/check-symlinks.sh
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
@@ -11,4 +14,3 @@ override_dh_auto_configure:
 		-Dubuntu-unity=true \
 		-Dsessions=false \
 		-Dxfwm4=true
-

@@ -5,7 +5,10 @@
 
 // Dash to dock specifics
 $dash_padding: $base_padding + 4px; // 10px
-$dash_border_radius: $modal_radius * 1.5;
+$dash_border_radius: $modal_radius * 3;
+
+// Custom Yaru definition
+$dock_item_border_radius: $base_border_radius * 1.5; // same as $menuitem_border_radius: $base_border_radius * 1.5;
 
 $dock_spacing: round($base_padding / 4);
 $dock_bottom_margin: $base_margin * 4;
@@ -14,6 +17,8 @@ $dock_side_margin: $dock_start_margin / 4;
 $dock_edge_items_padding: $dash_padding - $dock_spacing;
 $dock_fixed_inner_margin: $dock_side_margin;
 $dock_icons_distance: 4px;
+
+$dock_remark_color: rgba(238, 238, 238, 0.2);
 
 @function shrink($val) {
     @return round($val / 4);
@@ -51,7 +56,8 @@ $dock_icons_distance: 4px;
 // horizontal space in vertical mode.
 @mixin set-internal-children-property($side, $property,
                                       $minor_dimension,
-                                      $major_dimension: $minor_dimension) {
+                                      $major_dimension: $minor_dimension,
+                                      $edges: 0) {
     @if $property != margin and $property != padding {
         @error "Property " + $property + " not supported!";
     }
@@ -59,28 +65,39 @@ $dock_icons_distance: 4px;
     @if is_horizontal($side) {
         #{$property}: $minor_dimension $major_dimension;
         &:ltr:first-child, &:rtl:last-child {
-            #{$property}-left: 0;
+            #{$property}-left: $edges;
         }
         &:ltr:last-child, &:rtl:first-child {
-            #{$property}-right: 0;
+            #{$property}-right: $edges;
         }
     } @else {
         #{$property}: $major_dimension $minor_dimension;
         &:first-child {
-            #{$property}-top: 0;
+            #{$property}-top: $edges;
         }
         &:last-child {
-            #{$property}-bottom: 0;
+            #{$property}-bottom: $edges;
         }
     }
 }
 
+
+/* Yaru change */
+// a border is applied for panel mode
+// we need to add a 1px offset padding
+// to compensate with 1px border since
+// the border is rendered on top of the last column
+// of the dock (assuming it is positioned to the left)
+// -------------------------------------------------------
+// NOTE: yaru changes are the one commented with 'Yaru change'
 @mixin padded-edge-child($chid, $side, $padding) {
     @if $chid == first {
         @if is_horizontal($side) {
             padding-left: $padding;
+            padding-#{opposite($side)}: 1px; // Yaru Change
         } @else {
             padding-top: $padding;
+            padding-#{opposite($side)}: 1px; // Yaru Change
         }
     } @else if $chid == last {
         @if is_horizontal($side) {
@@ -92,6 +109,7 @@ $dock_icons_distance: 4px;
         @error "Invalid rule";
     }
 }
+/**/
 
 // In extended mode we need to use the first and last .dash-item-container's
 // to apply the padding on the dock, to ensure that the actual first or last
@@ -186,21 +204,24 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
                     0, $dock_icons_distance / 2);
 
                 .app-well-app,
-                .show-apps {
+                .show-apps,
+                .overview-tile {
                     @include set-internal-children-property($side, padding, $spacing);
                     padding-#{$side}: $padding + $side_margin;
                     padding-#{opposite($side)}: $padding;
                 }
 
-                .app-well-app {
+                .app-well-app,
+                .overview-tile {
                     &.running .overview-icon {
                         background-image: none;
                     }
                     &.focused .overview-icon {
-                        background-color: rgba(238, 238, 236, 0.2);
+                        background-color: $dock_remark_color;
                     }
 
-                    .app-well-app-running-dot {
+                    .app-well-app-running-dot,
+                    .app-grid-running-dot {
                         margin-bottom: 2px;
                     }
                 }
@@ -230,6 +251,17 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
     }
 }
 
+.dash-item-container .overview-tile .overview-icon,
+.dash-item-container .show-apps .overview-icon {
+    background-color: rgba(255,255,255,0);
+}
+
+.dash-item-container .overview-tile:hover .overview-icon,
+.dash-item-container .overview-tile.focused .overview-icon,
+.dash-item-container .show-apps:hover .overview-icon {
+    background-color: $dock_remark_color;
+}
+
 @each $side in $dock_sides {
     @each $style_mode in $dock_style_modes {
         $is_shrink: str-index(#{$style_mode}, shrink) !=null;
@@ -257,7 +289,11 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
                     side_margin: /* not shrunk */ $dock_side_margin,
                     padding: shrink($dash_padding),
                     margin: shrink($base_margin),
-                    edge_items_padding: shrink_light($dock_edge_items_padding),
+                    /* Yaru Change */
+                    // $edge items_padding is changed to make padding consistent across extended
+                    // and not extended.
+                    edge_items_padding: shrink($dash_padding), // shrink_light($dock_edge_items_padding),
+                    /**/
                     fixed_inner_margin: shrink($dock_fixed_inner_margin),
                 ));
             }
@@ -290,6 +326,11 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
             }
         }
     }
+
+    .dashtodock-app-well-preview-menu-item.#{$side} {
+        @include set-internal-children-property($side, padding,
+            0.5em, 0.5em, 1em);
+    }
 }
 
 #dashtodockContainer.top.shrink #dash .dash-background {
@@ -317,11 +358,77 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
     background: $dash_background_color;
 }
 
-#dashtodockContainer.dashtodock .progress-bar {
-    /* Customization of the progress bar style, e.g.:
-      -progress-bar-background: rgba(0.8, 0.8, 0.8, 1);
-      -progress-bar-border: rgba(0.9, 0.9, 0.9, 1);
-    */
+#dashtodockContainer.dashtodock .progress-bar,
+.overview-tile .progress-bar,
+.icon-grid .progress-bar {
+    /* Customization of the progress bar style. The possible elements
+     * are:
+     *
+     * -XXXXXX-YYYYYY: plain color
+     * -XXXXXX-YYYYYY-color-start: start color for gradient
+     * -XXXXXX-YYYYYY-color-end: end color for gradient
+     * -XXXXXX-YYYYYY-offset-start: offset for start color in gradient (0-1)
+     * -XXXXXX-YYYYYY-offset-end: offset for end color in gradient (0-1)
+     * -XXXXXX-line-width: width value for the line used for the border
+     *
+     * XXXXXX can be either
+     *
+     *    progress-bar-track: the "track" over which the progress bar is shown
+     *    progress-bar: the progress bar itself
+     *
+     * YYYYYY can be either
+     *
+     *    background: for the background color
+     *    border: for the border color
+     *
+     * plain color entries have priority over gradients, so if both are set for
+     * an element, the plain color will be used.
+     *
+     * Examples:
+     *
+     *  -progress-bar-track-background: rgba(128, 128, 0, 0.75);
+     *  -progress-bar-track-border: rgba(0, 0, 255, 0.25);
+     *
+     *  -progress-bar-background: rgba(0, 204, 204, 1);
+     *  -progress-bar-border: rgba(230, 230, 230, 1);
+     *
+     * Default values when these entries aren't set are equivalent to:
+     *   -progress-bar-track-background-color-start: 64, 64, 64, 1.0
+     *   -progress-bar-track-background-color-end: 89, 89, 89, 1.0
+     *   -progress-bar-track-background-start-offset: 0.4
+     *   -progress-bar-track-background-end-offset: 0.9
+     *   -progress-bar-track-border-color-start: 128, 128, 128, 0.1
+     *   -progress-bar-track-border-color-end: 89, 89, 89, 0.4
+     *   -progress-bar-track-border-start-offset: 0.5
+     *   -progress-bar-track-border-end-offset: 0.9
+     *   -progress-bar-track-line-width: 1
+     *   -progress-bar-background: 204, 204, 204, 1.0
+     *   -progress-bar-border: 230, 230, 230, 1.0
+     *   -progress-bar-height-factor: (0.20) 20% of the icon size
+     *   -progress-bar-line-width: 1
+     *   -progress-bar-top-offset: undefined
+     *   -progress-bar-valign: 1.0
+     *   -progress-bar-horizontal-padding: 0.05 (5% of icon size)
+     *   -progress-bar-vertical-padding: 0.05 (5% of icon size)
+     */
+    -progress-bar-track-background: rgba(0, 0, 0, 0.45);
+    -progress-bar-track-border: rgba(0, 0, 0, 0.7);
+    -progress-bar-background: rgba(255, 255, 255, 1.0);
+    -progress-bar-border: rgba(255, 255, 255, 1.0);
+}
+
+#overview,
+.apps-scroll-view {
+    .progress-bar {
+        -progress-bar-height-factor: 0.15;
+        -progress-bar-top-offset: 0;
+        -progress-bar-valign: 0.95;
+    }
+}
+
+#overview .grid-search-results .overview-tile .progress-bar,
+#overview .app-folder-dialog .progress-bar {
+    -progress-bar-height-factor: 0.13;
 }
 
 #dashtodockContainer.top #dash .placeholder,
@@ -350,13 +457,17 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
     transition-duration: 500ms;
 }
 
-#dashtodockContainer .number-overlay {
+#dashtodockContainer .number-overlay,
+.overview-tile .number-overlay,
+.icon-grid .number-overlay {
     color: rgba(255, 255, 255, 1);
     background-color: rgba(0, 0, 0, 0.8);
     text-align: center;
 }
 
-#dashtodockContainer .notification-badge {
+#dashtodockContainer .notification-badge,
+.overview-tile .notification-badge,
+.icon-grid .notification-badge {
     color: rgba(255, 255, 255, 1);
     background-color: rgba(255, 0, 0, 1);
     padding: 0.2em 0.5em;
@@ -371,10 +482,6 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
     height: auto;
     border-right-width: 1px;
     margin: 32px 0px;
-}
-
-.dashtodock-app-well-preview-menu-item {
-    padding: 1em 1em 0.5em 1em;
 }
 
 #dashtodockContainer .metro .overview-icon {
@@ -399,7 +506,9 @@ $dock_style_modes: [null, shrink, extended, extended-shrink];
 
 /* Yaru Dock styling */
 
-$dock_color: $panel_bg_color;
+// Use dark color for dock in both light and dark themes
+// This matches our panel styling approach
+$dock_color: $yaru_panel_bg_color;
 
 @each $side in bottom, top, left, right {
     #dashtodockContainer.#{$side} {
@@ -410,12 +519,31 @@ $dock_color: $panel_bg_color;
             padding: 0px;
 
             .dash-background {
-                background: transparentize($dock_color, 0.25);
-                transition-duration: $panel_transition_duration;
+                background: $dock_color; // Yaru: Drop translucent background
             }
 
             .dash-separator {
                 background: transparentize($osd_fg_color, 0.7);
+            }
+        }
+
+        #dash {
+            .dash-background {
+              // when not shrunk the padding used it $dash_padding;
+              // border radius will be the icon radius increased by dash padding;
+              // this is the correct way of making a consistent look instead of
+              // hard coding
+              border-radius: $dock_item_border_radius + $dash_padding;
+            }
+        }
+
+        &.shrink #dash {
+            .dash-background {
+              // when shrunk the padding used it shrink($dash_padding);
+              // border radius will be the icon radius increased by shrink($dash padding)
+              // this is the correct way of making a consistent look instead of
+              // hard coding
+              border-radius: $dock_item_border_radius + shrink($dash_padding);
             }
         }
 
@@ -436,25 +564,83 @@ $dock_color: $panel_bg_color;
                 .dash-background {
                     // Yaru: remove the border we apply to the upstream dock
                     border: none;
+                    // Yaru: then apply the border color to the side opposite to dock position,
+                    border-#{opposite($side)}: 1px;
+                    // Yaru: set a darker border;
+                    border-color: lighten($dock_color, 5%);
                 }
             }
         }
 
         .dash-item-container {
             .show-apps, .app-well-app {
-                border-radius: $dash_border_radius;
+                border-radius: $dock_item_border_radius; //Yaru: sync with pop-over
                 &:active, &:checked {
                     .overview-icon {
-                        background-color: $base_active_color; box-shadow: none;
+                        background-color: $active_bg_color; box-shadow: none;
                     }
                 }
             }
         }
 
-        .notification-badge {
-            background-color: $success_color;
-            border: 1px solid darken($success_color,10%);
-            box-shadow: -1px 1px 5px 0px transparentize(black, 0.5);
+        .dash-item-container {
+            // IMPORTANT: items on the dash need to extend to the edge to be adequate click targets
+            // as such the %tile style is overriden and button styles are applied to the child class .overview-icon
+            .show-apps,
+            .overview-tile {
+                // remove styles
+                @extend %reset;
+
+                margin: 0 $dash_spacing;
+                padding-bottom: $dash_edge_offset; // align with other items
+
+                $fg:$system_fg_color;
+                $normal_bg: transparent;
+                $focus_bg: transparentize($fg, .83);
+                $bg: transparentize($fg, .90);
+                $checked_bg: transparentize($fg, .75);
+
+                .overview-icon {
+                    @extend %tile;
+                    @include button(normal, $tc:$fg, $c:$normal_bg, $style: flat, $always_dark: true);
+                    border-radius: $dock_item_border_radius;
+                }
+
+                &:focus .overview-icon { @include button(focus, $tc:$fg, $c:$bg, $style: flat, $always_dark: true);}
+                &:hover .overview-icon { @include button(hover, $tc:$fg, $c:$bg, $style: flat, $always_dark: true);}
+                &:active .overview-icon { @include button(active, $tc:$fg, $c:$bg, $style: flat, $always_dark: true);}
+                &:checked .overview-icon { @include button(checked, $tc:$fg, $c:$checked_bg, $style: flat, $always_dark: true);}
+                &.focused .overview-icon { @include button(active, $tc: $fg, $c:$focus_bg, $style: flat, $always_dark: true);}
+            }
+
+            // running app dot
+            .app-grid-running-dot {
+                // manually position the dot within the dash item
+                margin-bottom: $dash_padding + $dash_edge_offset - 3px; // 3px = size of dot (5px) subtracted from its translationY from appDisplay.js
+
+                // margin-bottom: 13px; // hardcoded - Yaru change: move dot a bit down
+                background-color: -st-accent-color; // Yaru: we want an accented dot
+            }
         }
+    }
+}
+
+// Use Yaru's success color for the notification badges in the overview
+#dashtodockContainer .notification-badge,
+.overview-tile .notification-badge,
+.icon-grid .notification-badge {
+    background-color: $success_color;
+    border: 1px solid darken($success_color, 10%);
+    box-shadow: -1px 1px 5px 0px transparentize(black, 0.5);
+}
+
+// Yaru: align the progress bar with the bottom edge of the icon
+#overview,
+.apps-scroll-view,
+#dashtodockContainer.dashtodock {
+    .progress-bar {
+        -progress-bar-height-multiplier: 0.95;
+        -progress-bar-valign: 1;
+        -progress-bar-vertical-padding: 0;
     }
 }
