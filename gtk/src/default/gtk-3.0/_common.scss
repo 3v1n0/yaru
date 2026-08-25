@@ -7,8 +7,8 @@ $asset_suffix: if($variant=='dark', '-dark', '');
 $backdrop_transition: 200ms ease-out;
 $button_transition: all 200ms $ease-out-quad;
 $button_radius: 6px; // Yaru change: sync radius with Gtk4
-$menu_radius: 6px; // Yaru change: ↑↑↑
-$window_radius: $button_radius + 6; // Yaru change: ↑↑↑
+$menu_radius: 8px;
+$window_radius: 15px; // Yaru change: ↑↑↑
 $popover_radius: $window_radius; // Yaru change: ↑↑↑
 
 // Optional compact sizes for buttons, headerbar and headerbar widgets
@@ -108,6 +108,7 @@ $_switch_margin: if($_sizevariant=='default', 10px, 7px);
 .view,
 %view {
   color: $text_color;
+  caret-color: $caret_color;
   background-color: $base_color;
 
   &:backdrop {
@@ -559,6 +560,7 @@ treeview entry {
 // stuff for .needs-attention
 $_dot_color: if($variant=='light', $selected_bg_color,
                                    lighten($selected_bg_color,15%));
+@debug("Selected dot color is " + $_dot_color + ", BG color " + $selected_bg_color);
 @keyframes needs_attention {
   from {
     background-image: -gtk-gradient(radial,
@@ -1834,14 +1836,14 @@ headerbar {
 headerbar { // headerbar border rounding
 
   window separator:first-child + &,
-  window &:first-child { &:backdrop, & { border-top-left-radius: 7px; }}
-  window &:last-child { &:backdrop, & { border-top-right-radius: 7px; }}
+  window &:first-child { &:backdrop, & { border-top-left-radius: $window_radius + 1px; }} // Yaru change: sync window radius with Gtk4
+  window &:last-child { &:backdrop, & { border-top-right-radius: $window_radius + 1px; }} // Yaru change: sync window radius with Gtk4
 
   window stack & { // tackles the stacked headerbars case
     &:first-child, &:last-child {
       &:backdrop, & {
-        border-top-left-radius: 7px;
-        border-top-right-radius: 7px;
+        border-top-left-radius: $window_radius + 1px; // Yaru change: sync window radius with Gtk4
+        border-top-right-radius: $window_radius + 1px; // Yaru change: sync window radius with Gtk4
       }
     }
   }
@@ -3062,10 +3064,10 @@ check {
   border-radius: 3px;
 
   &:checked { -gtk-icon-source: image(-gtk-recolor(url("assets/check-symbolic.svg")),
-                                      -gtk-recolor(url("assets/check-symbolic.symbolic.png"))); }
+                                      url("assets/check-symbolic.symbolic.png")); }
 
   &:indeterminate { -gtk-icon-source: image(-gtk-recolor(url("assets/dash-symbolic.svg")),
-                                            -gtk-recolor(url("assets/dash-symbolic.symbolic.png"))); }
+                                            url("assets/dash-symbolic.symbolic.png")); }
 }
 
 %radio,
@@ -3073,10 +3075,10 @@ radio {
   border-radius: 100%;
 
   &:checked { -gtk-icon-source: image(-gtk-recolor(url("assets/bullet-symbolic.svg")),
-                                      -gtk-recolor(url("assets/bullet-symbolic.symbolic.png"))); }
+                                      url("assets/bullet-symbolic.symbolic.png")); }
 
   &:indeterminate { -gtk-icon-source: image(-gtk-recolor(url("assets/dash-symbolic.svg")),
-                                            -gtk-recolor(url("assets/dash-symbolic.symbolic.png"))); }
+                                            url("assets/dash-symbolic.symbolic.png")); }
 }
 
 // ANIMATION:
@@ -3968,8 +3970,8 @@ messagedialog { // Message Dialog styling
     background-image: none;
     background-color: $bg_color;
     border-style: none;
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
+    border-top-left-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
+    border-top-right-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
   }
 
   &.csd { // rounded bottom border styling for csd version
@@ -3988,13 +3990,13 @@ messagedialog { // Message Dialog styling
 
       &:first-child {
         border-left-style: none;
-        border-bottom-left-radius: $button_radius + 2;
-        -gtk-outline-bottom-left-radius: $button_radius + 2;
+        border-bottom-left-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
+        -gtk-outline-bottom-left-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
       }
 
       &:last-child {
-        border-bottom-right-radius: $button_radius + 2;
-        -gtk-outline-bottom-right-radius: $button_radius + 2;
+        border-bottom-right-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
+        -gtk-outline-bottom-right-radius: $window_radius+1; // Yaru change: sync radii with Gtk4
       }
     }
   }
@@ -4594,6 +4596,8 @@ decoration {
   // just doing borders, wm draws actual shadows
   .ssd & { box-shadow: 0 0 0 1px $_wm_border; }
   .ssd &:backdrop { box-shadow: 0 0 0 1px $_wm_border_backdrop; }
+  .ssd.maximized &,
+  .ssd.maximized &:backdrop { box-shadow: none; }
 
   .csd.popup & {
     border-radius: $menu_radius;

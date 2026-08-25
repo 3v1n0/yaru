@@ -1,89 +1,85 @@
 /* Search */
 
 // search overview container
+#searchResults {
+  margin: 0 $base_margin;
+}
+
 #searchResultsContent {
-  max-width: 1024px;
-  spacing: $base_margin * 2;
+  max-width: 1044px;
 }
 
 // search results sections "the boxes"
 .search-section {
   // This should be equal to #searchResultsContent spacing
-  spacing: $base_margin * 2;
+  spacing: $base_padding * 3;
 
   // separator (unstyled)
-  .search-section-separator { 
-    height: $base_margin*2; // use it as a spacer
+  .search-section-separator {
+    height: $base_margin * 2; // use it as a spacer
     background-color: transparent;
   }
 }
 
 // content
 .search-section-content {
-  background-color: lighten($system_bg_color, 5%);
-  border-radius: $modal_radius*1.5;
-  border: 1px solid $osd_outer_borders_color;
-  box-shadow: none;
-  text-shadow: none;
-  color: $osd_fg_color;
-  padding: $base_padding * 3;
-  margin: $base_margin;
-  // This is the space between the provider icon and the results container
+  background-color: $system_overlay_bg_color;
+  color: $system_fg_color;
+  border-radius: $modal_radius * 1.5;
+  padding: $base_padding * 2;
+  margin:0 $base_margin * 3;
+  border: 2px solid transparent;
+
+  @if $contrast == 'high' {
+    border-color: $hc_inset_color;
+  }
 }
 
 %search_section_content_item {
-  @extend %icon_tile;
+  @include tile_button($bg:$system_overlay_bg_color);
+  border-radius: $base_border_radius * 1.65;
+}
 
-  border-radius: $base_border_radius;
-
-  color: $osd_fg_color;
-
-  &:focus,
-  &:hover,
-  &:selected {
-    background-color: transparentize($osd_fg_color, .9);
-    transition-duration: 200ms;
-  }
-
-  &:active,
-  &:checked {
-    background-color: transparentize(darken($osd_bg_color, 10%), .1);
-  }
+.search-statusbox {
+    spacing: $base_padding * 4;
 }
 
 // "no results" text
 .search-statustext {
-  @extend %status_text;
+  @extend %title_1;
+  color: transparentize($system_fg_color, .2);
 }
 
 .grid-search-results {
-  spacing: $base_spacing * 6;
+  spacing: $base_padding * 5;
 }
 
 // Search results with icons
 .grid-search-result {
-  @extend %app_well_app;
+  @extend .overview-tile;
 }
 
 // search result provider
 .search-provider-icon {
   @extend %search_section_content_item;
+  &:ltr {margin-right: $base_margin;}
+  &:rtl {margin-left: $base_margin;}
 
   // content
   .list-search-provider-content {
-    spacing: $base_spacing * 2;
+    spacing: $base_padding * 2;
 
     // provider labels
     .list-search-provider-details {
       width: 120px;
-      color: $osd_fg_color;
+      color: $system_fg_color;
     }
   }
 }
 
 // search results list
 .list-search-results {
-  spacing: $base_spacing;
+  spacing: $base_padding;
 }
 
 // search result listitem
@@ -97,12 +93,19 @@
 
   // list item title (with leading icon)
   .list-search-result-title {
-    spacing: $base_spacing * 2;
-    // font-weight: bold;
+    spacing: $base_padding * 2;
+
+    @if $contrast == 'high' {
+      font-weight: bold;
+    }
   }
 
   // list item description
   .list-search-result-description {
-    color: $osd_insensitive_fg_color;
+    color: $system_insensitive_fg_color;
+
+    @if $contrast == 'high' {
+      color: $system_fg_color;
+    }
   }
 }

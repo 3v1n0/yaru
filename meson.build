@@ -1,20 +1,40 @@
 project('Yaru',
-        version: '22.04.1',
-        meson_version: '>= 0.53',
-        license : ['GPL3', 'CC BY-SA 4.0'],
-        default_options: ['prefix=/usr'])
+  version: '26.10.1',
+  meson_version: '>= 1.4.0',
+  license: ['GPL3', 'CC BY-SA 4.0'],
+  default_options: {'prefix': '/usr'},
+)
 
-project_source_root = meson.current_source_dir()
+fs = import('fs')
+gnome = import('gnome')
 
-components = ['icons', 'metacity', 'gnome-shell', 'gtk', 'gtksourceview', 'sounds', 'sessions', 'xfwm4', 'cinnamon']
+python = find_program('python3')
+sassc = find_program('sassc')
+
+enabled_accent_colors = get_option('accent-colors')
+subdir('common')
+
+components = [
+  'metacity',
+  'gnome-shell',
+  'gtk',
+  'icons',
+  'gtksourceview',
+  'sounds',
+  'sessions',
+  'ubuntu-unity',
+  'xfwm4',
+  'cinnamon-shell',
+]
 
 foreach component: components
   if not get_option(component)
-    message('skip component ' + component)
+    message('skip component @0@'.format(component))
     continue
   endif
 
-  message('build component ' + component)
+  message('build component @0@'.format(component))
   subdir(component)
-
 endforeach
+
+gnome.post_install(glib_compile_schemas: true)

@@ -1,1 +1,8 @@
-../../dark/gtk-4.0/gtk.scss
+$variant: 'dark';
+$contrast: 'normal';
+
+@import 'colors';
+@import 'drawing';
+@import 'common';
+@import 'tweaks';
+@import 'colors-public';
